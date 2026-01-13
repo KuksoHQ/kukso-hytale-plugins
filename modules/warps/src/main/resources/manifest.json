@@ -1,0 +1,18 @@
+{
+  "Group": "com.kukso.hy",
+  "Name": "KuksoWarps",
+  "Version": "1.0.0",
+  "Description": "A mod to set (CRUD) warps in Hytale.",
+  "Authors": [
+    {
+      "Name": "DevBD1"
+    }
+  ],
+  "Website": "https://kukso.com",
+  "ServerVersion": "*",
+  "Dependencies": {},
+  "OptionalDependencies": {},
+  "DisabledByDefault": false,
+  "Main": "com.kukso.hy.warps.Main",
+  "IncludesAssetPack": false
+}

@@ -1,0 +1,27 @@
+[2026/01/13 19:46:20   INFO]                 [CommandManager] MBD executed command: delwarp deneme
+[2026/01/13 19:46:20 SEVERE]                [AbstractCommand] Exception while running that command:
+java.lang.UnsupportedOperationException
+	at java.base/java.util.Collections$UnmodifiableMap.remove(Unknown Source)
+	at ThirdPartyPlugin//com.kukso.hy.warps.WarpManager.deleteWarp(WarpManager.java:21)
+	at ThirdPartyPlugin//com.kukso.hy.warps.commands.DelWarpCommand.execute(DelWarpCommand.java:39)
+	at com.hypixel.hytale.server.core.command.system.basecommands.AbstractPlayerCommand.lambda$executeAsync$0(AbstractPlayerCommand.java:85)
+	at com.hypixel.hytale.server.core.command.system.basecommands.AbstractAsyncCommand.lambda$runAsync$0(AbstractAsyncCommand.java:76)
+	at java.base/java.util.concurrent.CompletableFuture$AsyncRun.run(Unknown Source)
+	at com.hypixel.hytale.server.core.universe.world.World.consumeTaskQueue(World.java:894)
+	at com.hypixel.hytale.server.core.universe.world.World.tick(World.java:395)
+	at com.hypixel.hytale.server.core.util.thread.TickingThread.run(TickingThread.java:89)
+	at java.base/java.lang.Thread.run(Unknown Source)
+
+[2026/01/13 19:46:23   INFO]                 [CommandManager] MBD executed command: setwarp deneme2
+[2026/01/13 19:46:23 SEVERE]                [AbstractCommand] Exception while running that command:
+java.lang.UnsupportedOperationException
+	at java.base/java.util.Collections$UnmodifiableMap.put(Unknown Source)
+	at ThirdPartyPlugin//com.kukso.hy.warps.WarpManager.createWarp(WarpManager.java:16)
+	at ThirdPartyPlugin//com.kukso.hy.warps.commands.SetWarpCommand.execute(SetWarpCommand.java:38)
+	at com.hypixel.hytale.server.core.command.system.basecommands.AbstractPlayerCommand.lambda$executeAsync$0(AbstractPlayerCommand.java:85)
+	at com.hypixel.hytale.server.core.command.system.basecommands.AbstractAsyncCommand.lambda$runAsync$0(AbstractAsyncCommand.java:76)
+	at java.base/java.util.concurrent.CompletableFuture$AsyncRun.run(Unknown Source)
+	at com.hypixel.hytale.server.core.universe.world.World.consumeTaskQueue(World.java:894)
+	at com.hypixel.hytale.server.core.universe.world.World.tick(World.java:395)
+	at com.hypixel.hytale.server.core.util.thread.TickingThread.run(TickingThread.java:89)
+	at java.base/java.lang.Thread.run(Unknown Source)
