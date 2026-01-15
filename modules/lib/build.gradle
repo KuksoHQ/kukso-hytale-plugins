@@ -3,18 +3,49 @@ plugins {
 }
 
 group = 'com.kukso.hy.lib'
-version = '1.0-SNAPSHOT'
+description = 'Core library for the Hytale Mods ecosystem.'
+
+def versionFile = file("version.txt")
+if (versionFile.exists()) {
+    version = versionFile.text.trim()
+} else {
+    versionFile.text = project.version?.toString() ?: "0.0.0"
+    version = versionFile.text.trim()
+}
+println "[KuksoLib] Using project.version = ${version}"
 
 repositories {
     mavenCentral()
+    mavenLocal()
 }
 
 dependencies {
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    implementation files('libs/HytaleServer.jar')
+}
+
+processResources {
+    def props = [version: version]
+    inputs.properties props
+    filteringCharset 'UTF-8'
+    filesMatching('manifest.json') {
+        expand(version: project.version)
+        expand props
+    }
+}
+
+tasks.register("printJdk") {
+    doLast {
+        println "Running with: " + System.getProperty("java.version")
+    }
 }
 
 test {
     useJUnitPlatform()
+}
+
+jar {
+    archiveBaseName.set('KuksoHyLib')
 }
