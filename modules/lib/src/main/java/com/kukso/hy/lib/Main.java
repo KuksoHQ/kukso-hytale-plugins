@@ -1,17 +1,47 @@
 package com.kukso.hy.lib;
 
-//TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
-// click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
-public class Main {
-    static void main() {
-        //TIP Press <shortcut actionId="ShowIntentionActions"/> with your caret at the highlighted text
-        // to see how IntelliJ IDEA suggests fixing it.
-        IO.println(String.format("Hello and welcome!"));
+import com.kukso.hy.lib.command.CmdRegistrar;
+import com.kukso.hy.lib.command.commands.HelpCommand;
+import com.kukso.hy.lib.command.commands.ReloadCommand;
 
-        for (int i = 1; i <= 5; i++) {
-            //TIP Press <shortcut actionId="Debug"/> to start debugging your code. We have set one <icon src="AllIcons.Debugger.Db_set_breakpoint"/> breakpoint
-            // for you, but you can always add more by pressing <shortcut actionId="ToggleLineBreakpoint"/>.
-            IO.println("i = " + i);
+public class Main {
+
+    private static Main instance;
+    private CmdRegistrar cmdRegistrar;
+
+    public static Main getInstance() {
+        return instance;
+    }
+
+    public void onEnable() {
+        instance = this;
+
+        // Initialize command registrar
+        cmdRegistrar = new CmdRegistrar();
+
+        // Register all commands
+        registerCommands();
+
+        System.out.println("[KuksoLib] Enabled successfully!");
+    }
+
+    public void onDisable() {
+        if (cmdRegistrar != null) {
+            cmdRegistrar.clear();
         }
+        System.out.println("[KuksoLib] Disabled successfully!");
+    }
+
+    private void registerCommands() {
+        cmdRegistrar.registerAll(
+                new HelpCommand(),
+                new ReloadCommand()
+        );
+
+        System.out.println("[KuksoLib] Registered " + cmdRegistrar.getCommandCount() + " commands.");
+    }
+
+    public CmdRegistrar getCmdRegistrar() {
+        return cmdRegistrar;
     }
 }
