@@ -20,6 +20,9 @@ public class CmdManager extends CommandBase {
     public CmdManager() {
         super("kuksolib", "KuksoLib main command");
         addAliases("klib");
+
+        // Allow extra arguments for subcommands
+        setAllowsExtraArguments(true);
     }
 
     /**

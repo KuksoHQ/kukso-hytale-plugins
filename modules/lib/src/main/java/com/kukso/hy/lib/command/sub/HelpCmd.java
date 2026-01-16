@@ -5,6 +5,7 @@ import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.command.system.CommandSender;
 import com.kukso.hy.lib.command.CmdInterface;
 import com.kukso.hy.lib.command.CmdManager;
+import com.kukso.hy.lib.util.ColorMan;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -49,7 +50,8 @@ public class HelpCmd implements CmdInterface {
 
     @Override
     public boolean execute(CommandSender sender, String[] args) {
-        sender.sendMessage(Message.raw("=== KuksoLib Help ===").bold(true).color("#FFD700"));
+        // Using ColorMan to translate color codes
+        sender.sendMessage(ColorMan.translate("&e&l=== KuksoLib Help ==="));
 
         if (manager == null) return true;
 
@@ -61,7 +63,7 @@ public class HelpCmd implements CmdInterface {
 
             if (!hasPermission) continue;
 
-            sender.sendMessage(Message.raw(cmd.getUsage() + " - " + cmd.getDescription()).color("#FFFF55"));
+            sender.sendMessage(ColorMan.translate("&e" + cmd.getUsage() + " &7- " + cmd.getDescription()));
         }
         return true;
     }

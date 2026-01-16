@@ -76,6 +76,7 @@ The library uses a hierarchical subcommand system with clear separation of conce
    - Routes subcommands: `/kuksolib <subcommand> [args...]`
    - Manages alias-to-command mapping
    - Handles permission checking before delegating to subcommands
+   - **Important:** Uses `setAllowsExtraArguments(true)` to accept subcommand arguments
 
 3. **CmdRegistrar** - Static registration utility
    - Called from `Main.start()` to register all commands
@@ -84,7 +85,7 @@ The library uses a hierarchical subcommand system with clear separation of conce
 
 **Subcommands location:** `com.kukso.hy.lib.command.sub.*`
 - Each subcommand implements `CmdInterface`
-- Examples: HelpCmd, ReloadCmd, VersionCmd
+- Examples: HelpCmd, ReloadCmd, VersionCmd, TestCmd
 
 ### Adding New Commands
 
@@ -134,7 +135,7 @@ public class MyCmd implements CmdInterface {
      - If empty, anyone with group access can use the command
      - If specified, sender must have at least one of the listed permissions
 - Examples:
-  - `HelpCmd`, `VersionCmd`: `GameMode.Adventure` + no specific permissions = all players
+  - `HelpCmd`, `VersionCmd`, `TestCmd`: `GameMode.Adventure` + no specific permissions = all players
   - `ReloadCmd`: `null` (requires `kuksolib.admin` or `*`) + `kuksolib.reload` permission
 - The wildcard permission `*` grants access to all commands
 
@@ -152,12 +153,73 @@ The plugin follows Hytale's manifest.json specification:
 - **Dependencies/OptionalDependencies** - Other plugins required
 - **IncludesAssetPack** - Whether plugin contains game assets
 
+## Built-in Commands
+
+The library includes several built-in commands accessible via `/kuksolib` (aliases: `/klib`, `/kl`):
+
+- **help** (`?`) - Shows available commands
+- **version** (`ver`, `v`) - Displays plugin version and Java info
+- **reload** (`rl`) - Reloads the plugin configuration (OP-only)
+- **test** (`t`) - Testing utilities for KuksoLib features
+  - `test chatcolor` - Demonstrates ColorMan's formatting capabilities with rainbow text, mixed formatting, and hex colors
+
+**Example:** `/kuksolib test chatcolor` will display:
+- Rainbow-like text
+- Mixed formatting (bold, italic, reset)
+- Hex color examples
+- All standard Minecraft colors
+- Complex color combinations
+
+## Utility Classes
+
+### ColorMan (`com.kukso.hy.lib.util.ColorMan`)
+
+Translates Minecraft-style color codes to Hytale's Message format.
+
+**Supported Features:**
+- Legacy color codes: `&0-9`, `&a-f` (standard 16 Minecraft colors)
+- Format codes: `&l` (bold), `&o` (italic)
+- Hex colors: `&#RRGGBB` (e.g., `&#FF5733`)
+- Reset code: `&r` (resets all formatting)
+
+**Usage:**
+```java
+import com.kukso.hy.lib.util.ColorMan;
+
+// Simple color
+Message msg = ColorMan.translate("&aHello!");
+// Result: Green "Hello!"
+
+// Multiple colors in one message (fully supported!)
+Message msg = ColorMan.translate("&4Hel&clo &bWo&1rld!");
+// Result: "Hel" in dark red, "lo " in red, "Wo" in aqua, "rld!" in dark blue
+
+// Multiple colors and formatting
+Message msg = ColorMan.translate("&e&lKuksoLib &7- &aReady!");
+// Result: Yellow bold "KuksoLib", gray " - ", green "Ready!"
+
+// Hex colors
+Message msg = ColorMan.translate("&#FF5733This is orange!");
+
+// Complex combinations
+Message msg = ColorMan.translate("&l&4Bold Red &r&oItalic White &a&lBold Green");
+```
+
+**Limitations:**
+- Only `bold` and `italic` are supported (Hytale Message API limitation)
+- Format codes `&n` (underlined), `&m` (strikethrough), `&k` (obfuscated) are ignored
+
+**How It Works:**
+- ColorMan parses the text into segments, each with its own color and formatting
+- Uses Hytale's `Message.insert()` to chain segments together
+- Each color change creates a new segment with independent formatting
+
 ## Module Structure (Planned)
 
 The README describes several modules that are planned or in development:
 - **GUI Module** - Interactive in-game menus with fluent builder API
 - **Localization Module** - YAML-based multi-language support
-- **Chat Colorization** - Color codes, hex colors, and gradients
+- **Chat Colorization** - Color codes, hex colors, and gradients (ColorMan partially implements this)
 - **Economy Module** - Complete economy system with SQLite/MySQL backend
 
 These modules are documented in the README but may not all be implemented yet. Check the actual source code structure when working on features.
@@ -176,3 +238,4 @@ These modules are documented in the README but may not all be implemented yet. C
 - Commands use the CmdInterface pattern for consistency
 - Singleton pattern for main plugin instance (`Main.getInstance()`)
 - Use Hytale's logger: `plugin.getLogger().at(Level.INFO).log("message")` (Static instance in the Main class is LOGGER)
+- For colored messages, prefer `ColorMan.translate("&atext")` over manual `Message.raw().color()` calls

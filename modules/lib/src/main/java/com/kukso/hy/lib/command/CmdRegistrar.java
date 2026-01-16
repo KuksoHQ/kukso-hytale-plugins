@@ -26,6 +26,7 @@ public final class CmdRegistrar {
         mgr.register(new HelpCmd(mgr));
         mgr.register(new ReloadCmd(plugin));
         mgr.register(new VersionCmd(plugin));
+        mgr.register(new TestCmd());
 
         // Register the main command with the plugin's command registry
         plugin.getCommandRegistry().registerCommand(mgr);
