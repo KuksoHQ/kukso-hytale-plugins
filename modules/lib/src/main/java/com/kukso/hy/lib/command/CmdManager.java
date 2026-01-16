@@ -23,6 +23,9 @@ public class CmdManager extends CommandBase {
 
         // Allow extra arguments for subcommands
         setAllowsExtraArguments(true);
+
+        // Note: Tab completion for dynamic subcommands is not currently supported
+        // due to limitations in Hytale's command API for commands using setAllowsExtraArguments
     }
 
     /**

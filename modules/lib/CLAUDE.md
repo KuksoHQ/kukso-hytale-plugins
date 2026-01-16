@@ -77,6 +77,7 @@ The library uses a hierarchical subcommand system with clear separation of conce
    - Manages alias-to-command mapping
    - Handles permission checking before delegating to subcommands
    - **Important:** Uses `setAllowsExtraArguments(true)` to accept subcommand arguments
+   - **Limitation:** Tab completion is not currently supported due to Hytale API limitations with dynamic subcommands
 
 3. **CmdRegistrar** - Static registration utility
    - Called from `Main.start()` to register all commands
