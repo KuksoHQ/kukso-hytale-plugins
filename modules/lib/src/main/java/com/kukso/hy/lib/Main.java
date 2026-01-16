@@ -1,47 +1,44 @@
 package com.kukso.hy.lib;
 
 import com.kukso.hy.lib.command.CmdRegistrar;
-import com.kukso.hy.lib.command.commands.HelpCommand;
-import com.kukso.hy.lib.command.commands.ReloadCommand;
 
-public class Main {
+import com.hypixel.hytale.logger.HytaleLogger;
+import com.hypixel.hytale.server.core.plugin.JavaPlugin;
+import com.hypixel.hytale.server.core.plugin.JavaPluginInit;
 
+import javax.annotation.Nonnull;
+
+public class Main extends JavaPlugin {
+
+    String MAIN_CMD = "kuksolib";
+    private static final HytaleLogger LOGGER = HytaleLogger.forEnclosingClass();
     private static Main instance;
-    private CmdRegistrar cmdRegistrar;
+
+    public Main(@Nonnull JavaPluginInit init) {
+        super(init);
+        LOGGER.atInfo().log("Hello from " + this.getName() + " version " + this.getManifest().getVersion().toString());
+    }
 
     public static Main getInstance() {
         return instance;
     }
 
-    public void onEnable() {
+    @Override
+    protected void setup() {
         instance = this;
+        LOGGER.atInfo().log("Setting up plugin " + this.getName());
 
-        // Initialize command registrar
-        cmdRegistrar = new CmdRegistrar();
-
-        // Register all commands
-        registerCommands();
-
-        System.out.println("[KuksoLib] Enabled successfully!");
+        // Register commands
+        CmdRegistrar.register(instance);
     }
 
-    public void onDisable() {
-        if (cmdRegistrar != null) {
-            cmdRegistrar.clear();
-        }
-        System.out.println("[KuksoLib] Disabled successfully!");
+    @Override
+    protected void start() {
+        LOGGER.atInfo().log(this.getName() + " enabled successfully!");
     }
 
-    private void registerCommands() {
-        cmdRegistrar.registerAll(
-                new HelpCommand(),
-                new ReloadCommand()
-        );
-
-        System.out.println("[KuksoLib] Registered " + cmdRegistrar.getCommandCount() + " commands.");
-    }
-
-    public CmdRegistrar getCmdRegistrar() {
-        return cmdRegistrar;
+    @Override
+    public void shutdown() {
+        LOGGER.atInfo().log(this.getName() + " disabled successfully!");
     }
 }
