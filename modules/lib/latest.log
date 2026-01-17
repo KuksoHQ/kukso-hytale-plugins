@@ -1,0 +1,36 @@
+[2026/01/17 08:07:27   INFO]                   [Main] Setting up plugin com.kukso.hy.lib:KuksoLib
+[2026/01/17 08:07:27 SEVERE]             [KuksoLib|P] Failed to setup plugin com.kukso.hy.lib:KuksoLib
+java.lang.NoClassDefFoundError: org/yaml/snakeyaml/Yaml
+	at ThirdPartyPlugin//com.kukso.hy.lib.locale.LocaleLoader.parseYaml(LocaleLoader.java:128)
+	at ThirdPartyPlugin//com.kukso.hy.lib.locale.LocaleLoader.loadFile(LocaleLoader.java:67)
+	at ThirdPartyPlugin//com.kukso.hy.lib.locale.LocaleLoader.lambda$loadAll$1(LocaleLoader.java:42)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.accept(Unknown Source)
+	at java.base/java.util.stream.ReferencePipeline$2$1.accept(Unknown Source)
+	at java.base/java.util.Iterator.forEachRemaining(Unknown Source)
+	at java.base/java.util.Spliterators$IteratorSpliterator.forEachRemaining(Unknown Source)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(Unknown Source)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(Unknown Source)
+	at java.base/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(Unknown Source)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(Unknown Source)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(Unknown Source)
+	at java.base/java.util.stream.ReferencePipeline.forEach(Unknown Source)
+	at ThirdPartyPlugin//com.kukso.hy.lib.locale.LocaleLoader.loadAll(LocaleLoader.java:39)
+	at ThirdPartyPlugin//com.kukso.hy.lib.locale.LocaleMan.reload(LocaleMan.java:100)
+	at ThirdPartyPlugin//com.kukso.hy.lib.locale.LocaleMan.init(LocaleMan.java:70)
+	at ThirdPartyPlugin//com.kukso.hy.lib.Main.setup(Main.java:33)
+	at com.hypixel.hytale.server.core.plugin.PluginBase.setup0(PluginBase.java:389)
+	at com.hypixel.hytale.server.core.plugin.PluginManager.setup(PluginManager.java:757)
+	at com.hypixel.hytale.server.core.plugin.PluginManager.setup(PluginManager.java:236)
+	at com.hypixel.hytale.server.core.HytaleServer.boot(HytaleServer.java:345)
+	at com.hypixel.hytale.server.core.HytaleServer.<init>(HytaleServer.java:303)
+	at com.hypixel.hytale.LateMain.lateMain(LateMain.java:54)
+	at com.hypixel.hytale.Main.main(Main.java:43)
+Caused by: java.lang.ClassNotFoundException: org.yaml.snakeyaml.Yaml
+	at com.hypixel.hytale.server.core.plugin.PluginClassLoader.loadClass0(PluginClassLoader.java:118)
+	at com.hypixel.hytale.server.core.plugin.PluginClassLoader.loadClass(PluginClassLoader.java:73)
+	at java.base/java.lang.ClassLoader.loadClass(Unknown Source)
+	... 24 more
+
+-=|Setup|100.0
+[2026/01/17 08:07:27   INFO]              [LocaleMan] LocaleMan shutdown complete
+[2026/01/17 08:07:27   INFO]                   [Main] com.kukso.hy.lib:KuksoLib disabled successfully!

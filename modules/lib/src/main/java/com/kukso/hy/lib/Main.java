@@ -1,6 +1,7 @@
 package com.kukso.hy.lib;
 
 import com.kukso.hy.lib.command.CmdRegistrar;
+import com.kukso.hy.lib.locale.LocaleMan;
 
 import com.hypixel.hytale.logger.HytaleLogger;
 import com.hypixel.hytale.server.core.plugin.JavaPlugin;
@@ -28,6 +29,9 @@ public class Main extends JavaPlugin {
         instance = this;
         LOGGER.atInfo().log("Setting up plugin " + this.getName());
 
+        // Initialize localization
+        LocaleMan.init(this);
+
         // Register commands
         CmdRegistrar.register(instance);
     }
@@ -39,6 +43,9 @@ public class Main extends JavaPlugin {
 
     @Override
     public void shutdown() {
+        // Shutdown localization
+        LocaleMan.shutdown();
+
         LOGGER.atInfo().log(this.getName() + " disabled successfully!");
     }
 }

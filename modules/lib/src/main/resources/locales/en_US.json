@@ -1,0 +1,29 @@
+{
+  "prefix": "&e[KuksoLib]&r",
+
+  "messages": {
+    "welcome": "&aWelcome to the server, &e{player}&a!",
+    "goodbye": "&7Goodbye, &e{player}&7!"
+  },
+
+  "commands": {
+    "reload": {
+      "success": "&aConfiguration reloaded successfully!",
+      "error": "&cReload failed: {error}"
+    },
+    "help": {
+      "header": "&e&lKuksoLib Commands",
+      "usage": "&7Usage: &f{usage}"
+    },
+    "version": {
+      "info": "&eKuksoLib &7version &f{version}"
+    }
+  },
+
+  "errors": {
+    "no_permission": "&cYou do not have permission to use this command.",
+    "player_only": "&cThis command can only be used by players.",
+    "unknown_command": "&cUnknown command. Use &f/kuksolib help &cfor a list of commands.",
+    "invalid_args": "&cInvalid arguments. Usage: &f{usage}"
+  }
+}

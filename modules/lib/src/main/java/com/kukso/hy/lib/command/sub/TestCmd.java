@@ -2,11 +2,14 @@ package com.kukso.hy.lib.command.sub;
 
 import com.hypixel.hytale.protocol.GameMode;
 import com.hypixel.hytale.server.core.command.system.CommandSender;
+import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.kukso.hy.lib.command.CmdInterface;
+import com.kukso.hy.lib.locale.LocaleMan;
 import com.kukso.hy.lib.util.ColorMan;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Test subcommand - provides testing utilities for KuksoLib features.
@@ -37,7 +40,7 @@ public class TestCmd implements CmdInterface {
 
     @Override
     public String getDescription() {
-        return "Test KuksoLib features (chatcolor, etc.)";
+        return "Test KuksoLib features (chatcolor, locale, etc.)";
     }
 
     @Override
@@ -45,6 +48,7 @@ public class TestCmd implements CmdInterface {
         if (args.length == 0) {
             sender.sendMessage(ColorMan.translate("&e&lKuksoLib Test Commands"));
             sender.sendMessage(ColorMan.translate("&7/kuksolib test chatcolor &f- Test color formatting"));
+            sender.sendMessage(ColorMan.translate("&7/kuksolib test locale &f- Test localization system"));
             return true;
         }
 
@@ -56,9 +60,14 @@ public class TestCmd implements CmdInterface {
             case "colors":
                 testChatColor(sender);
                 break;
+            case "locale":
+            case "lang":
+            case "language":
+                testLocale(sender);
+                break;
             default:
                 sender.sendMessage(ColorMan.translate("&cUnknown test: &f" + args[0]));
-                sender.sendMessage(ColorMan.translate("&7Available tests: &echatcolor"));
+                sender.sendMessage(ColorMan.translate("&7Available tests: &echatcolor&7, &elocale"));
                 break;
         }
 
@@ -94,14 +103,54 @@ public class TestCmd implements CmdInterface {
         sender.sendMessage(ColorMan.translate("&aAll color tests completed!"));
     }
 
+    /**
+     * Demonstrates the localization system capabilities.
+     */
+    private void testLocale(CommandSender sender) {
+        sender.sendMessage(ColorMan.translate("&e&l=== LocaleMan Test ==="));
+        sender.sendMessage(ColorMan.translate(""));
+
+        // Show loaded locales
+        sender.sendMessage(ColorMan.translate("&7Loaded locales: &e" + String.join(", ", LocaleMan.getLoadedLocales())));
+
+        // Test raw string retrieval
+        String welcome = LocaleMan.getRaw(LocaleMan.DEFAULT_LOCALE, "messages.welcome");
+        sender.sendMessage(ColorMan.translate("&7Raw welcome key: &f" + welcome));
+
+        // Test with placeholder
+        String goodbye = LocaleMan.getRaw(LocaleMan.DEFAULT_LOCALE, "messages.goodbye");
+        sender.sendMessage(ColorMan.translate("&7Raw goodbye key: &f" + goodbye));
+
+        // Test prefix
+        String prefix = LocaleMan.getRaw(LocaleMan.DEFAULT_LOCALE, "prefix");
+        sender.sendMessage(ColorMan.translate("&7Prefix: &f" + prefix));
+
+        // If sender is a player, test player-specific lookup
+        if (sender instanceof PlayerRef player) {
+            String playerLocale = LocaleMan.getPlayerLocale(player);
+            sender.sendMessage(ColorMan.translate("&7Your locale: &e" + playerLocale));
+
+            // Test getting message for player with placeholder
+            sender.sendMessage(ColorMan.translate("&7Personalized welcome:"));
+            sender.sendMessage(LocaleMan.get(player, "messages.welcome", Map.of("player", player.getUsername())));
+        }
+
+        // Test fallback (missing key)
+        String missing = LocaleMan.getRaw(LocaleMan.DEFAULT_LOCALE, "this.key.does.not.exist");
+        sender.sendMessage(ColorMan.translate("&7Missing key test: &c" + missing));
+
+        sender.sendMessage(ColorMan.translate(""));
+        sender.sendMessage(ColorMan.translate("&aAll locale tests completed!"));
+    }
+
     @Override
     public List<String> tabComplete(CommandSender sender, String[] args) {
         if (args.length == 0) {
-            return List.of("chatcolor");
+            return List.of("chatcolor", "locale");
         }
         if (args.length == 1) {
             String partial = args[0].toLowerCase();
-            return List.of("chatcolor", "color", "colors").stream()
+            return List.of("chatcolor", "color", "colors", "locale", "lang", "language").stream()
                     .filter(s -> s.startsWith(partial))
                     .toList();
         }

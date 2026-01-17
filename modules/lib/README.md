@@ -41,78 +41,94 @@ gui.open(player);
 
 ### Localization Module
 
-Multi-language support made simple. Reach players worldwide.
+Multi-language support based on player's client language setting.
 
 ```java
-import com.kukso.hy.lib.locale.Locale;
-import com.kukso.hy.lib.locale.LocaleManager;
+import com.kukso.hy.lib.locale.LocaleMan;
 
-// Load language files from resources/lang/
-LocaleManager locales = new LocaleManager("lang/");
-locales.loadLocale("en_US");
-locales.loadLocale("es_ES");
-locales.loadLocale("de_DE");
+// Basic usage - automatically uses player's language
+Message msg = LocaleMan.get(playerRef, "messages.welcome");
+player.sendMessage(msg);
 
-// Get translated message with placeholders
-String message = locales.get(player, "welcome.message",
-    "player", player.getName(),
-    "online", server.getOnlineCount());
+// With placeholders
+Message msg = LocaleMan.get(playerRef, "messages.welcome",
+    Map.of("player", player.getUsername()));
 
-player.sendMessage(message);
+// Raw string for specific locale
+String text = LocaleMan.getRaw("en_US", "messages.welcome");
+
+// Check what locales are loaded
+Set<String> loaded = LocaleMan.getLoadedLocales();
 ```
 
-**Language file example** (`lang/en_US.yml`):
-```yaml
-welcome:
-  message: "Welcome, {player}! There are {online} players online."
-  first_join: "Welcome to the server for the first time, {player}!"
-
-errors:
-  no_permission: "&cYou don't have permission to do that."
-  not_enough_coins: "&cYou need {required} coins. You have {current}."
+**Language file example** (`locales/en_US.json`):
+```json
+{
+  "prefix": "&e[MyPlugin]&r",
+  "messages": {
+    "welcome": "&aWelcome, &e{player}&a!",
+    "goodbye": "&7Goodbye, &e{player}&7!"
+  },
+  "errors": {
+    "no_permission": "&cYou don't have permission to do that.",
+    "not_enough_coins": "&cYou need {required} coins. You have {current}."
+  }
+}
 ```
 
 **Features:**
-- YAML-based language files
-- Placeholder support with key-value pairs
-- Per-player language preferences
-- Fallback language support
-- Hot-reload capabilities
+- JSON-based language files (no external dependencies)
+- Automatic placeholder resolution with `{placeholder}` syntax
+- Player language detection from client settings
+- Fallback chain: Player locale → Default locale (en_US) → Key name
+- Thread-safe with concurrent access support
+- Hot-reload via `/kuksolib reload`
+- Color code support in translations (integrates with ColorMan)
 
 ---
 
 ### Chat Colorization Module
 
-Bring your chat messages to life with colors, gradients, and formatting.
+Translate Minecraft-style color codes to Hytale's Message format.
 
 ```java
-import com.kukso.hy.lib.chat.ChatColor;
-import com.kukso.hy.lib.chat.Gradient;
+import com.kukso.hy.lib.util.ColorMan;
 
-// Basic color codes
-String colored = ChatColor.colorize("&aGreen &bAqua &cRed");
+// Basic color codes - returns Hytale Message object
+Message msg = ColorMan.translate("&aGreen &bAqua &cRed");
+
+// Multiple colors in one message
+Message msg = ColorMan.translate("&4Hel&clo &bWo&1rld!");
+// Result: "Hel" dark red, "lo " red, "Wo" aqua, "rld!" dark blue
 
 // Hex color support
-String hex = ChatColor.colorize("&#FF5733This is orange!");
+Message msg = ColorMan.translate("&#FF5733This is orange!");
 
-// Gradient text
-String gradient = Gradient.apply("Rainbow Text",
-    "#FF0000", "#FF7F00", "#FFFF00", "#00FF00", "#0000FF", "#8B00FF");
+// Formatting codes
+Message msg = ColorMan.translate("&l&4Bold Red &r&oItalic White");
 
-// Predefined gradients
-String fire = Gradient.FIRE.apply("Hot Message");
-String ocean = Gradient.OCEAN.apply("Cool Message");
+// Combined with localization
+Message msg = LocaleMan.get(player, "messages.welcome"); // Already colored!
 
-player.sendMessage(gradient);
+player.sendMessage(msg);
 ```
 
+**Supported Codes:**
+- Legacy colors: `&0-9`, `&a-f` (standard 16 Minecraft colors)
+- Hex colors: `&#RRGGBB` (e.g., `&#FF5733`)
+- Bold: `&l`
+- Italic: `&o`
+- Reset: `&r` (resets color and formatting)
+
 **Features:**
-- Legacy color code support (`&a`, `&b`, etc.)
-- Full hex color support (`&#RRGGBB`)
-- Gradient text with unlimited color stops
-- Predefined gradient presets (Fire, Ocean, Rainbow, Sunset, etc.)
-- Format codes (bold, italic, underline, strikethrough)
-- RGB animations for dynamic effects
+- Full legacy color code support
+- Hex color support for custom colors
+- Multiple colors in a single message
+- Format codes (bold, italic)
+- Seamless integration with LocaleMan
+- Returns native Hytale Message objects
+
+**Note:** Underline (`&n`), strikethrough (`&m`), and obfuscated (`&k`) are not supported by Hytale's Message API.
 
 ---
 
@@ -188,31 +204,48 @@ dependencies {
 
 ## Requirements
 
-- Java 17 or higher
+- Java 25 (matches Hytale runtime)
 - HytaleServer API
 
 ## Quick Start
 
+KuksoLib is a standalone plugin. Simply include it as a dependency in your plugin's `manifest.json`:
+
+```json
+{
+  "Dependencies": ["com.kukso.hy.lib:KuksoLib"]
+}
+```
+
+Then use the utilities in your plugin:
+
 ```java
-import com.kukso.hy.lib.KuksoLib;
+import com.kukso.hy.lib.util.ColorMan;
+import com.kukso.hy.lib.locale.LocaleMan;
 
-public class MyMod extends HytaleMod {
-
-    @Override
-    public void onEnable() {
-        // Initialize the library
-        KuksoLib.init(this);
-
-        // Now you can use all modules
-        getLogger().info("MyMod enabled with kukso-hy-lib!");
-    }
+public class MyPlugin extends JavaPlugin {
 
     @Override
-    public void onDisable() {
-        KuksoLib.shutdown();
+    protected void start() {
+        // Send colored messages
+        player.sendMessage(ColorMan.translate("&aHello, &e" + player.getUsername() + "&a!"));
+
+        // Or use localization with automatic color support
+        player.sendMessage(LocaleMan.get(player, "messages.welcome",
+            Map.of("player", player.getUsername())));
     }
 }
 ```
+
+## Built-in Commands
+
+Access via `/kuksolib` (aliases: `/klib`, `/kl`):
+
+- **help** - Shows available commands
+- **version** - Displays plugin version
+- **reload** - Reloads configuration and locales (OP-only)
+- **test chatcolor** - Demonstrates color formatting
+- **test locale** - Demonstrates localization system
 
 ## Documentation
 

@@ -162,7 +162,8 @@ The library includes several built-in commands accessible via `/kuksolib` (alias
 - **version** (`ver`, `v`) - Displays plugin version and Java info
 - **reload** (`rl`) - Reloads the plugin configuration (OP-only)
 - **test** (`t`) - Testing utilities for KuksoLib features
-  - `test chatcolor` - Demonstrates ColorMan's formatting capabilities with rainbow text, mixed formatting, and hex colors
+  - `test chatcolor` - Demonstrates ColorMan's formatting capabilities
+  - `test locale` - Demonstrates LocaleMan's localization system
 
 **Example:** `/kuksolib test chatcolor` will display:
 - Rainbow-like text
@@ -215,15 +216,100 @@ Message msg = ColorMan.translate("&l&4Bold Red &r&oItalic White &a&lBold Green")
 - Uses Hytale's `Message.insert()` to chain segments together
 - Each color change creates a new segment with independent formatting
 
+### LocaleMan (`com.kukso.hy.lib.locale.LocaleMan`)
+
+Native localization system for multi-language support based on player's client language.
+
+**Package Structure:**
+```
+com.kukso.hy.lib.locale/
+├── LocaleMan.java          # Main static utility (entry point)
+├── LocaleCache.java        # Player language cache (ConcurrentHashMap)
+├── LocaleLoader.java       # JSON file loading/parsing (uses Gson)
+├── LocaleListener.java     # Event listeners for player join/disconnect
+└── PlaceholderResolver.java # {placeholder} replacement utility
+```
+
+**File Structure:**
+```
+plugins/KuksoLib/locales/
+├── en_US.json   (default, always present)
+├── tr_TR.json
+├── de_DE.json
+└── ...
+```
+
+**JSON Locale File Format:**
+```json
+{
+  "prefix": "&e[KuksoLib]&r",
+  "messages": {
+    "welcome": "&aWelcome to the server, &e{player}&a!",
+    "goodbye": "&7Goodbye, &e{player}&7!"
+  },
+  "commands": {
+    "reload": {
+      "success": "&aConfiguration reloaded!",
+      "error": "&cReload failed: {error}"
+    }
+  },
+  "errors": {
+    "no_permission": "&cNo permission."
+  }
+}
+```
+
+**Usage:**
+```java
+import com.kukso.hy.lib.locale.LocaleMan;
+
+// Basic usage - gets message in player's language
+Message msg = LocaleMan.get(playerRef, "messages.welcome");
+
+// With placeholders
+Message msg = LocaleMan.get(playerRef, "messages.welcome",
+    Map.of("player", playerName));
+
+// Raw string for specific locale (for other plugins)
+String text = LocaleMan.getRaw("en_US", "messages.welcome");
+
+// Check player's locale
+String locale = LocaleMan.getPlayerLocale(playerRef);
+
+// Get all loaded locales
+Set<String> locales = LocaleMan.getLoadedLocales();
+```
+
+**Fallback Chain:**
+1. Player's locale (e.g., `tr_TR`)
+2. Default locale (`en_US`)
+3. Key itself (with warning logged)
+
+**Lifecycle Integration:**
+- `LocaleMan.init(plugin)` - Called automatically in `Main.setup()`
+- `LocaleMan.shutdown()` - Called automatically in `Main.shutdown()`
+- `LocaleMan.reload()` - Called by `/kuksolib reload` command
+
+**Adding New Locale Files:**
+1. Create a JSON file in `src/main/resources/locales/` (e.g., `de_DE.json`)
+2. Copy structure from `en_US.json` and translate values
+3. The file is auto-extracted to plugin data folder on first run
+4. Players with matching client language will see translations
+
+**Thread Safety:**
+- Uses `ConcurrentHashMap` for both cache and translations
+- Atomic reload: builds new map, then swaps reference
+- Safe for concurrent access from multiple threads
+
 ## Module Structure (Planned)
 
 The README describes several modules that are planned or in development:
 - **GUI Module** - Interactive in-game menus with fluent builder API
-- **Localization Module** - YAML-based multi-language support
-- **Chat Colorization** - Color codes, hex colors, and gradients (ColorMan partially implements this)
+- **Localization Module** - JSON-based multi-language support (IMPLEMENTED - see LocaleMan above)
+- **Chat Colorization** - Color codes, hex colors, and gradients (IMPLEMENTED - see ColorMan above)
 - **Economy Module** - Complete economy system with SQLite/MySQL backend
 
-These modules are documented in the README but may not all be implemented yet. Check the actual source code structure when working on features.
+Check the actual source code structure when working on features.
 
 ## Development Notes
 

@@ -4,6 +4,7 @@ import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.command.system.CommandSender;
 import com.hypixel.hytale.server.core.plugin.PluginBase;
 import com.kukso.hy.lib.command.CmdInterface;
+import com.kukso.hy.lib.locale.LocaleMan;
 
 import java.util.Collections;
 import java.util.List;
@@ -45,8 +46,11 @@ public class ReloadCmd implements CmdInterface {
     public boolean execute(CommandSender sender, String[] args) {
         plugin.getLogger().at(Level.INFO).log("Reload command used by " + sender.getDisplayName());
 
-        // TODO: Implement actual reload logic
         sender.sendMessage(Message.raw("Reloading KuksoLib..."));
+
+        // Reload localization
+        LocaleMan.reload();
+
         sender.sendMessage(Message.raw("KuksoLib reloaded successfully!").color("#55FF55"));
 
         plugin.getLogger().at(Level.INFO).log("Reloaded by " + sender.getDisplayName());
