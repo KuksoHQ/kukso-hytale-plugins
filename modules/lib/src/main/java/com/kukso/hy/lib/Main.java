@@ -1,6 +1,8 @@
 package com.kukso.hy.lib;
 
 import com.kukso.hy.lib.command.CmdRegistrar;
+import com.kukso.hy.lib.economy.EconomyListener;
+import com.kukso.hy.lib.economy.EconomyManager;
 import com.kukso.hy.lib.locale.LocaleMan;
 
 import com.hypixel.hytale.logger.HytaleLogger;
@@ -32,6 +34,15 @@ public class Main extends JavaPlugin {
         // Initialize localization
         LocaleMan.init(this);
 
+        // Initialize Economy Manager (registers ComponentType)
+        economyManager = new EconomyManager();
+        LOGGER.atInfo().log("Economy Manager initialized");
+
+        // Register Economy Listener
+        economyListener = new EconomyListener(this, economyManager);
+        economyListener.register();
+        LOGGER.atInfo().log("Economy Listener registered");
+
         // Register commands
         CmdRegistrar.register(instance);
     }
@@ -43,9 +54,18 @@ public class Main extends JavaPlugin {
 
     @Override
     public void shutdown() {
+        // Unregister economy listener
+        if (economyListener != null) {
+            economyListener.unregister();
+        }
+
         // Shutdown localization
         LocaleMan.shutdown();
 
-        LOGGER.atInfo().log(this.getName() + " disabled successfully!");
+        LOGGER.atInfo().log(this.getName() + " shutdown successfully!");
+    }
+
+    public EconomyManager getEconomyManager() {
+        return economyManager;
     }
 }
