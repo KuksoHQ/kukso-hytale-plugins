@@ -17,6 +17,26 @@
     },
     "version": {
       "info": "&eKuksoLib &7version &f{version}"
+    },
+    "economy": {
+      "balance_self": "&eBalance: &a{balance}",
+      "balance_other": "&e{player}'s Balance: &a{balance}",
+      "pay_success_sender": "&aYou paid &e{player} &a{amount}",
+      "pay_success_receiver": "&aYou received &e{amount} &afrom &e{player}",
+      "set_success": "&aSet &e{player}'s &abalance to &e{amount}",
+      "set_notify": "&eYour balance has been set to &a{amount}",
+      "give_success": "&aGave &e{amount} &ato &e{player}",
+      "give_notify": "&aYou received &e{amount}",
+      "take_success": "&aTook &e{amount} &afrom &e{player}",
+      "take_notify": "&e{amount} &awas taken from your account",
+      "help_header": "&e&lEconomy Commands:",
+      "help_balance": "&7/kl eco [balance] &f- Check your balance",
+      "help_balance_other": "&7/kl eco balance <player> &f- Check player's balance",
+      "help_pay": "&7/kl eco pay <player> <amount> &f- Pay someone",
+      "help_admin_header": "&c&lAdmin Commands:",
+      "help_set": "&7/kl eco set <player> <amount> &f- Set balance",
+      "help_give": "&7/kl eco give <player> <amount> &f- Give money",
+      "help_take": "&7/kl eco take <player> <amount> &f- Take money"
     }
   },
 
@@ -24,6 +44,19 @@
     "no_permission": "&cYou do not have permission to use this command.",
     "player_only": "&cThis command can only be used by players.",
     "unknown_command": "&cUnknown command. Use &f/kuksolib help &cfor a list of commands.",
-    "invalid_args": "&cInvalid arguments. Usage: &f{usage}"
+    "invalid_args": "&cInvalid arguments. Usage: &f{usage}",
+    "economy": {
+      "player_not_found": "&cPlayer not found: {player}",
+      "cannot_pay_self": "&cYou cannot pay yourself!",
+      "invalid_amount": "&cInvalid amount: {amount}",
+      "amount_positive": "&cAmount must be positive!",
+      "amount_not_negative": "&cAmount cannot be negative!",
+      "transaction_failed": "&cTransaction failed: {reason}",
+      "operation_failed": "&cFailed to complete operation.",
+      "usage_pay": "&cUsage: /kl eco pay <player> <amount>",
+      "usage_set": "&cUsage: /kl eco set <player> <amount>",
+      "usage_give": "&cUsage: /kl eco give <player> <amount>",
+      "usage_take": "&cUsage: /kl eco take <player> <amount>"
+    }
   }
 }
