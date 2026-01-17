@@ -13,22 +13,17 @@ import javax.annotation.Nonnull;
 
 public class Main extends JavaPlugin {
 
-    String MAIN_CMD = "kuksolib";
     private static final HytaleLogger LOGGER = HytaleLogger.forEnclosingClass();
-    private static Main instance;
+    private EconomyManager economyManager;
+    private EconomyListener economyListener;
 
     public Main(@Nonnull JavaPluginInit init) {
         super(init);
-        LOGGER.atInfo().log("Hello from " + this.getName() + " version " + this.getManifest().getVersion().toString());
-    }
-
-    public static Main getInstance() {
-        return instance;
+        LOGGER.atInfo().log("Hello from " + this.getIdentifier().getName() + " version " + this.getManifest().getVersion().toString());
     }
 
     @Override
     protected void setup() {
-        instance = this;
         LOGGER.atInfo().log("Setting up plugin " + this.getName());
 
         // Initialize localization
@@ -44,12 +39,12 @@ public class Main extends JavaPlugin {
         LOGGER.atInfo().log("Economy Listener registered");
 
         // Register commands
-        CmdRegistrar.register(instance);
+        CmdRegistrar.register(this);
     }
 
     @Override
     protected void start() {
-        LOGGER.atInfo().log(this.getName() + " enabled successfully!");
+        LOGGER.atInfo().log(this.getName() + " started successfully!");
     }
 
     @Override
