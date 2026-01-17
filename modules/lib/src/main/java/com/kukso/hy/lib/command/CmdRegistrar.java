@@ -1,8 +1,9 @@
 package com.kukso.hy.lib.command;
 
+import com.kukso.hy.lib.command.sub.*;
+
 import com.hypixel.hytale.logger.HytaleLogger;
 import com.hypixel.hytale.server.core.plugin.PluginBase;
-import com.kukso.hy.lib.command.sub.*;
 
 import java.util.logging.Level;
 
@@ -18,7 +19,7 @@ public final class CmdRegistrar {
      * @param plugin The plugin instance
      */
     public static void register(PluginBase plugin) {
-        HytaleLogger logger = plugin.getLogger();
+        HytaleLogger LOGGER = plugin.getLogger();
 
         CmdManager mgr = new CmdManager();
 
@@ -27,10 +28,11 @@ public final class CmdRegistrar {
         mgr.register(new ReloadCmd(plugin));
         mgr.register(new VersionCmd(plugin));
         mgr.register(new TestCmd());
+        mgr.register(new EconomyCmd());
 
         // Register the main command with the plugin's command registry
         plugin.getCommandRegistry().registerCommand(mgr);
 
-        logger.at(Level.INFO).log("Commands registered.");
+        LOGGER.atInfo().log( "Commands (5) registered for " + plugin.getIdentifier().getName());
     }
 }
