@@ -1,7 +1,7 @@
 {
     "Group": "com.kukso.hy.lib",
     "Name": "KuksoLib",
-    "Version": "1.0.0",
+    "Version": "1.0.1",
     "Description": "A core library for the Hytale Mods ecosystem.",
     "Authors": [
         {

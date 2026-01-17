@@ -85,7 +85,7 @@ public class TestCmd implements CmdInterface {
         sender.sendMessage(ColorMan.translate("&7Rainbow: &4R&ca&6i&en&ab&bo&9w&5!"));
 
         // Mixed formatting
-        sender.sendMessage(ColorMan.translate("&7Mixed: &l&cERROR: &r&7Something went &4&lwrong&r&7!"));
+        sender.sendMessage(ColorMan.translate("&7Mixed: &l&cERROR: &r&7Something went &4&lwrong&r&7! &a(no it didn't)"));
 
         // Hex colors
         sender.sendMessage(ColorMan.translate("&7Hex: &#FF0000Red &#00FF00Green &#0000FFBlue"));

@@ -31,7 +31,7 @@ public class EconomyCmd implements CmdInterface {
 
     @Override
     public List<String> getAliases() {
-        return List.of("eco", "money", "bal");
+        return List.of("eco");
     }
 
     @Override
@@ -49,24 +49,20 @@ public class EconomyCmd implements CmdInterface {
         return "Manage economy and balances";
     }
 
+    @SuppressWarnings("removal")
     @Override
     public boolean execute(CommandSender sender, String[] args) {
         // Check if sender is a Player entity
-        if (!(sender instanceof Player playerEntity)) {
+        if (!(sender instanceof Player player)) {
             sender.sendMessage(ColorMan.translate("&cThis command can only be used by players."));
             return true;
         }
 
-        // Get PlayerRef from Player entity
-        PlayerRef player = playerEntity.getPlayerRef();
-        if (player == null) {
-            sender.sendMessage(ColorMan.translate("&cCould not get player reference. Please try again."));
-            return true;
-        }
+        PlayerRef playerRef = player.getPlayerRef();
 
         // Default: show own balance
         if (args.length == 0) {
-            sendBalance(player, player);
+            sendBalance(player, playerRef);
             return true;
         }
 
@@ -75,54 +71,56 @@ public class EconomyCmd implements CmdInterface {
         switch (sub) {
             case "balance":
             case "bal":
-                handleBalance(player, args);
+                handleBalance(player, playerRef, args);
                 break;
             case "pay":
-                handlePay(player, args);
+                handlePay(player, playerRef, args);
                 break;
             case "set":
-                handleSet(player, args);
+                handleSet(player, playerRef, args);
                 break;
             case "give":
-                handleGive(player, args);
+                handleGive(player, playerRef, args);
                 break;
             case "take":
-                handleTake(player, args);
+                handleTake(player, playerRef, args);
                 break;
             case "help":
             case "?":
                 sendHelp(player);
                 break;
             default:
-                sendBalance(player, player);
+                sendBalance(player, playerRef);
                 break;
         }
         return true;
     }
 
-    private void handleBalance(PlayerRef player, String[] args) {
+    @SuppressWarnings("removal")
+    private void handleBalance(Player player, PlayerRef playerRef, String[] args) {
         if (args.length == 1) {
-            sendBalance(player, player);
+            sendBalance(player, playerRef);
         } else {
             // Check another player's balance
             String targetName = args[1];
-            PlayerRef target = resolvePlayer(targetName);
+            Player target = resolvePlayer(player, targetName);
             if (target == null) {
                 player.sendMessage(ColorMan.translate("&cPlayer not found: " + targetName));
                 return;
             }
-            sendBalance(player, target);
+            sendBalance(player, target.getPlayerRef());
         }
     }
 
-    private void handlePay(PlayerRef player, String[] args) {
+    @SuppressWarnings("removal")
+    private void handlePay(Player player, PlayerRef playerRef, String[] args) {
         if (args.length < 3) {
             player.sendMessage(ColorMan.translate("&cUsage: /kl eco pay <player> <amount>"));
             return;
         }
 
         String targetName = args[1];
-        PlayerRef target = resolvePlayer(targetName);
+        Player target = resolvePlayer(player, targetName);
         if (target == null) {
             player.sendMessage(ColorMan.translate("&cPlayer not found: " + targetName));
             return;
@@ -146,28 +144,25 @@ public class EconomyCmd implements CmdInterface {
             return;
         }
 
-        Transaction result = eco.transfer(player, target, amount);
+        PlayerRef targetRef = target.getPlayerRef();
+        Transaction result = eco.transfer(playerRef, targetRef, amount);
         if (result.isSuccessful()) {
-            player.sendMessage(ColorMan.translate("&aYou paid &e" + target.getUsername() + " &a" + eco.format(amount)));
-            target.sendMessage(ColorMan.translate("&aYou received &e" + eco.format(amount) + " &afrom &e" + player.getUsername()));
+            player.sendMessage(ColorMan.translate("&aYou paid &e" + targetRef.getUsername() + " &a" + eco.format(amount)));
+            target.sendMessage(ColorMan.translate("&aYou received &e" + eco.format(amount) + " &afrom &e" + playerRef.getUsername()));
         } else {
             player.sendMessage(ColorMan.translate("&cTransaction failed: " + result.getFailureReason()));
         }
     }
 
-    private void handleSet(PlayerRef player, String[] args) {
-        if (!hasAdminPermission(player)) {
-            player.sendMessage(ColorMan.translate("&cYou don't have permission to use this command."));
-            return;
-        }
-
+    @SuppressWarnings("removal")
+    private void handleSet(Player player, PlayerRef playerRef, String[] args) {
         if (args.length < 3) {
             player.sendMessage(ColorMan.translate("&cUsage: /kl eco set <player> <amount>"));
             return;
         }
 
         String targetName = args[1];
-        PlayerRef target = resolvePlayer(targetName);
+        Player target = resolvePlayer(player, targetName);
         if (target == null) {
             player.sendMessage(ColorMan.translate("&cPlayer not found: " + targetName));
             return;
@@ -186,9 +181,10 @@ public class EconomyCmd implements CmdInterface {
             return;
         }
 
-        boolean success = eco.setBalance(target, amount);
+        PlayerRef targetRef = target.getPlayerRef();
+        boolean success = eco.setBalance(targetRef, amount);
         if (success) {
-            player.sendMessage(ColorMan.translate("&aSet &e" + target.getUsername() + "'s &abalance to &e" + eco.format(amount)));
+            player.sendMessage(ColorMan.translate("&aSet &e" + targetRef.getUsername() + "'s &abalance to &e" + eco.format(amount)));
             if (!target.equals(player)) {
                 target.sendMessage(ColorMan.translate("&eYour balance has been set to &a" + eco.format(amount)));
             }
@@ -197,19 +193,15 @@ public class EconomyCmd implements CmdInterface {
         }
     }
 
-    private void handleGive(PlayerRef player, String[] args) {
-        if (!hasAdminPermission(player)) {
-            player.sendMessage(ColorMan.translate("&cYou don't have permission to use this command."));
-            return;
-        }
-
+    @SuppressWarnings("removal")
+    private void handleGive(Player player, PlayerRef playerRef, String[] args) {
         if (args.length < 3) {
             player.sendMessage(ColorMan.translate("&cUsage: /kl eco give <player> <amount>"));
             return;
         }
 
         String targetName = args[1];
-        PlayerRef target = resolvePlayer(targetName);
+        Player target = resolvePlayer(player, targetName);
         if (target == null) {
             player.sendMessage(ColorMan.translate("&cPlayer not found: " + targetName));
             return;
@@ -228,9 +220,10 @@ public class EconomyCmd implements CmdInterface {
             return;
         }
 
-        boolean success = eco.deposit(target, amount);
+        PlayerRef targetRef = target.getPlayerRef();
+        boolean success = eco.deposit(targetRef, amount);
         if (success) {
-            player.sendMessage(ColorMan.translate("&aGave &e" + eco.format(amount) + " &ato &e" + target.getUsername()));
+            player.sendMessage(ColorMan.translate("&aGave &e" + eco.format(amount) + " &ato &e" + targetRef.getUsername()));
             if (!target.equals(player)) {
                 target.sendMessage(ColorMan.translate("&aYou received &e" + eco.format(amount)));
             }
@@ -239,19 +232,15 @@ public class EconomyCmd implements CmdInterface {
         }
     }
 
-    private void handleTake(PlayerRef player, String[] args) {
-        if (!hasAdminPermission(player)) {
-            player.sendMessage(ColorMan.translate("&cYou don't have permission to use this command."));
-            return;
-        }
-
+    @SuppressWarnings("removal")
+    private void handleTake(Player player, PlayerRef playerRef, String[] args) {
         if (args.length < 3) {
             player.sendMessage(ColorMan.translate("&cUsage: /kl eco take <player> <amount>"));
             return;
         }
 
         String targetName = args[1];
-        PlayerRef target = resolvePlayer(targetName);
+        Player target = resolvePlayer(player, targetName);
         if (target == null) {
             player.sendMessage(ColorMan.translate("&cPlayer not found: " + targetName));
             return;
@@ -270,9 +259,10 @@ public class EconomyCmd implements CmdInterface {
             return;
         }
 
-        Transaction result = eco.withdraw(target, amount);
+        PlayerRef targetRef = target.getPlayerRef();
+        Transaction result = eco.withdraw(targetRef, amount);
         if (result.isSuccessful()) {
-            player.sendMessage(ColorMan.translate("&aTook &e" + eco.format(amount) + " &afrom &e" + target.getUsername()));
+            player.sendMessage(ColorMan.translate("&aTook &e" + eco.format(amount) + " &afrom &e" + targetRef.getUsername()));
             if (!target.equals(player)) {
                 target.sendMessage(ColorMan.translate("&e" + eco.format(amount) + " &awas taken from your account"));
             }
@@ -281,59 +271,44 @@ public class EconomyCmd implements CmdInterface {
         }
     }
 
-    private void sendBalance(PlayerRef viewer, PlayerRef target) {
+    private void sendBalance(Player viewer, PlayerRef target) {
         double bal = eco.getBalance(target);
-        if (viewer.equals(target)) {
+        @SuppressWarnings("removal")
+        PlayerRef viewerRef = viewer.getPlayerRef();
+        if (viewerRef.equals(target)) {
             viewer.sendMessage(ColorMan.translate("&eBalance: &a" + eco.format(bal)));
         } else {
             viewer.sendMessage(ColorMan.translate("&e" + target.getUsername() + "'s Balance: &a" + eco.format(bal)));
         }
     }
 
-    private void sendHelp(PlayerRef player) {
+    private void sendHelp(Player player) {
         player.sendMessage(ColorMan.translate("&e&lEconomy Commands:"));
         player.sendMessage(ColorMan.translate("&7/kl eco [balance] &f- Check your balance"));
         player.sendMessage(ColorMan.translate("&7/kl eco balance <player> &f- Check player's balance"));
         player.sendMessage(ColorMan.translate("&7/kl eco pay <player> <amount> &f- Pay someone"));
-
-        if (hasAdminPermission(player)) {
-            player.sendMessage(ColorMan.translate("&c&lAdmin Commands:"));
-            player.sendMessage(ColorMan.translate("&7/kl eco set <player> <amount> &f- Set balance"));
-            player.sendMessage(ColorMan.translate("&7/kl eco give <player> <amount> &f- Give money"));
-            player.sendMessage(ColorMan.translate("&7/kl eco take <player> <amount> &f- Take money"));
-        }
+        player.sendMessage(ColorMan.translate("&c&lAdmin Commands:"));
+        player.sendMessage(ColorMan.translate("&7/kl eco set <player> <amount> &f- Set balance"));
+        player.sendMessage(ColorMan.translate("&7/kl eco give <player> <amount> &f- Give money"));
+        player.sendMessage(ColorMan.translate("&7/kl eco take <player> <amount> &f- Take money"));
     }
 
     /**
-     * Checks if a player has admin permission.
+     * Resolves a player name to a Player entity.
+     * Searches online players in the sender's world using case-insensitive substring matching.
      *
-     * @param player The player to check
-     * @return true if the player has admin permission
+     * @param sender The player executing the command (used to get world)
+     * @param name The player name to search for
+     * @return The Player or null if not found
      */
-    private boolean hasAdminPermission(PlayerRef player) {
-        // PlayerRef doesn't have hasPermission, so we check via CommandSender
-        // For now, assume all commands go through CmdManager which checks permissions
-        // This is a simplified check - in production, integrate with permission system
-        return true; // Permissions are checked by CmdManager
-    }
-
-    /**
-     * Resolves a player name to a PlayerRef.
-     * First checks online players, then can be extended for offline support.
-     *
-     * @param name The player name
-     * @return The PlayerRef or null if not found
-     */
-    private PlayerRef resolvePlayer(String name) {
-        // Try to find online player
-        try {
-            // This needs to be adapted based on actual Hytale API
-            // Placeholder implementation - needs real player lookup
-            // For now, return null to indicate "not implemented"
-            return null;
-        } catch (Exception e) {
-            return null;
+    @SuppressWarnings("removal")
+    private Player resolvePlayer(Player sender, String name) {
+        for (Player p : sender.getWorld().getPlayers()) {
+            if (p.toString().toLowerCase().contains(name.toLowerCase())) {
+                return p;
+            }
         }
+        return null;
     }
 
     @Override
