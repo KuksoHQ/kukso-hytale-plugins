@@ -167,6 +167,6 @@ test {
     useJUnitPlatform()
 }
 
-jar {
-    archiveBaseName.set('KuksoHyLib')
-}
+//jar {
+//    archiveBaseName.set('KuksoHyLib')
+//}
