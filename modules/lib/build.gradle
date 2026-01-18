@@ -1,5 +1,7 @@
 plugins {
     id 'java'
+    id 'maven-publish'
+    id 'signing'
     id 'org.jetbrains.gradle.plugin.idea-ext' version '1.3'
 }
 
@@ -58,6 +60,9 @@ println "[KuksoLib] Using project.version = ${version}"
 repositories {
     mavenCentral()
     mavenLocal()
+    maven {
+        url = uri('https://nexus.kukso.com/repository/maven-public')
+    }
 }
 
 dependencies {
@@ -170,3 +175,77 @@ test {
 //jar {
 //    archiveBaseName.set('KuksoHyLib')
 //}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+            pom {
+                name.set("KuksoHyLib")
+                description.set("Core Library for Kukso Hytale Mods")
+                url.set("https://github.com/KuksoHQ/kukso-hy-lib")
+
+                licenses {
+                    license {
+                        name.set("Apache License, Version 2.0")
+                        url.set("https://www.apache.org/licenses/LICENSE-2.0")
+                    }
+                }
+
+                developers {
+                    developer {
+                        id.set("DevBD1")
+                        name.set("M. Burak Dorman")
+                        email.set("burakdorman@gmail.com")
+                    }
+                }
+
+                scm {
+                    connection.set("scm:git:git://github.com/KuksoHQ/kukso-hy-lib.git")
+                    developerConnection.set("scm:git:ssh://github.com/KuksoHQ/kukso-hy-lib.git")
+                    url.set("https://github.com/KuksoHQ/kukso-hy-lib")
+                }
+            }
+        }
+    }
+
+    repositories {
+//        maven {
+//            name = "OSSRH"
+//            url = uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
+//
+//            credentials {
+//                username = project.findProperty("ossrhUsername") ?: System.getenv("OSSRH_USERNAME")
+//                password = project.findProperty("ossrhPassword") ?: System.getenv("OSSRH_PASSWORD")
+//            }
+//        }
+        maven {
+            def releaseRepoUrl = uri('https://nexus.kukso.com/repository/maven-releases/')
+            def snapshotsRepoUrl = uri('https://nexus.kukso.com/repository/maven-snapshots/')
+
+            name = "KuksoStudios"
+            url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releaseRepoUrl
+
+            credentials {
+                username = project.findProperty("kuksoUser") ?: System.getenv("KUKSO_USER")
+                password = project.findProperty("kuksoToken") ?: System.getenv("KUKSO_TOKEN")
+            }
+        }
+    }
+}
+
+signing {
+    def keyFile = project.findProperty("signing.keyFile")
+
+    def signingKeyId = project.findProperty("signing.keyId") ?: System.getenv("SIGNING_KEY_ID")
+    def signingKey = keyFile ? file(keyFile).text : System.getenv("SIGNING_KEY")
+    def signingPassword = project.findProperty("signing.password") ?: System.getenv("SIGNING_PASSWORD")
+
+    if (keyFile && signingPassword) {
+        useInMemoryPgpKeys(signingKey, signingPassword as String)
+        sign publishing.publications.mavenJava
+        logger.lifecycle("[KuksoHyLib] Signing configured using key file: ${keyFile}")
+    } else {
+        logger.warn("[KuksoHyLib] Signing skipped — missing signing.keyFile or signing.password.")
+    }
+}
