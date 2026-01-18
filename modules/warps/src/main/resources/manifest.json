@@ -1,8 +1,8 @@
 {
-  "Group": "com.kukso.hy",
+  "Group": "com.kukso.hy.warps",
   "Name": "KuksoWarps",
   "Version": "1.1.0",
-  "Description": "A mod to set (CRUD) warps in Hytale.",
+  "Description": "A mod to set and use warps in Hytale.",
   "Authors": [
     {
       "Name": "DevBD1"
@@ -14,5 +14,5 @@
   "OptionalDependencies": {},
   "DisabledByDefault": false,
   "Main": "com.kukso.hy.warps.Main",
-  "IncludesAssetPack": false
+  "IncludesAssetPack": true
 }
