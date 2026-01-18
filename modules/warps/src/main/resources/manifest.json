@@ -10,7 +10,9 @@
   ],
   "Website": "${website}",
   "ServerVersion": "${server_version}",
-  "Dependencies": {},
+  "Dependencies": {
+    "com.kukso.hy.lib": "1.1.0"
+  },
   "OptionalDependencies": {},
   "DisabledByDefault": false,
   "Main": "${entry_point}",
