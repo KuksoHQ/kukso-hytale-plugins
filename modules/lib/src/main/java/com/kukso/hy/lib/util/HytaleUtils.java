@@ -1,4 +1,4 @@
-package com.kukso.hy.lib.economy;
+package com.kukso.hy.lib.util;
 
 import com.hypixel.hytale.component.Component;
 import com.hypixel.hytale.component.ComponentType;
