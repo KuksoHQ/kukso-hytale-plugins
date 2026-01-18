@@ -4,7 +4,7 @@ import com.hypixel.hytale.component.ComponentType;
 import com.hypixel.hytale.logger.HytaleLogger;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
-import com.kukso.hy.lib.Main;
+import com.kukso.hy.lib.util.HytaleUtils;
 
 import java.lang.reflect.Constructor;
 
