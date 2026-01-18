@@ -1,6 +1,7 @@
 package com.kukso.hy.lib;
 
 import com.kukso.hy.lib.command.CmdRegistrar;
+import com.kukso.hy.lib.config.ConfigManager;
 import com.kukso.hy.lib.economy.EconomyListener;
 import com.kukso.hy.lib.economy.EconomyManager;
 import com.kukso.hy.lib.locale.LocaleMan;
@@ -25,6 +26,10 @@ public class Main extends JavaPlugin {
     @Override
     protected void setup() {
         LOGGER.atInfo().log("Setting up plugin " + this.getName());
+
+        // Initialize configuration (must be first)
+        ConfigManager.init(this);
+        LOGGER.atInfo().log("Configuration loaded");
 
         // Initialize localization
         LocaleMan.init(this);
@@ -56,6 +61,9 @@ public class Main extends JavaPlugin {
 
         // Shutdown localization
         LocaleMan.shutdown();
+
+        // Shutdown configuration (should be last)
+        ConfigManager.shutdown();
 
         LOGGER.atInfo().log(this.getName() + " shutdown successfully!");
     }

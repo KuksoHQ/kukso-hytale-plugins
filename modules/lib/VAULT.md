@@ -20,12 +20,13 @@ KuksoLib will provide the same abstraction layer for Hytale:
 - **Swappable backends** - Server admins choose their preferred economy/permission/chat plugins
 - **Standardized API** - Consistent method signatures across all implementations
 - **Response objects** - Rich feedback for transactions and operations
+- **Library-only** - Provides API, database, and ECS infrastructure; user-facing commands (e.g., `/balance`, `/pay`) are implemented by separate plugins
 
 ---
 
 ## Architecture
 
-### Service Provider Pattern
+### Service Provider Pattern (Lazy Activation)
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -37,68 +38,132 @@ KuksoLib will provide the same abstraction layer for Hytale:
 ┌─────────────────────────────────────────────────────────────────┐
 │                         KUKSOLIB                                │
 │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐              │
-│  │ Economy API │  │Permission API│  │   Chat API  │             │
-│  │  Interface  │  │   Interface  │  │  Interface  │             │
+│  │ Economy API │  │Permission API│ │   Chat API  │              │
+│  │  (DORMANT)  │  │  (DORMANT)  │  │  (DORMANT)  │              │
 │  └──────┬──────┘  └──────┬──────┘  └──────┬──────┘              │
 │         │                │                │                     │
 │         ▼                ▼                ▼                     │
 │  ┌─────────────────────────────────────────────────────────────┐│
 │  │              ServiceManager (Registry)                      ││
+│  │   - Lazy module activation on first registration            ││
 │  │   - Registers provider implementations                      ││
 │  │   - Priority-based provider selection                       ││
 │  │   - Runtime provider switching                              ││
 │  └─────────────────────────────────────────────────────────────┘│
+│                                                                 │
+│  Activation triggers:                                           │
+│  ServiceManager.registerEconomy()    → Activates Economy module │
+│  ServiceManager.registerPermission() → Activates Permission     │
+│  ServiceManager.registerChat()       → Activates Chat module    │
 └─────────────────────────────────────────────────────────────────┘
                               │
           ┌───────────────────┼───────────────────┐
           ▼                   ▼                   ▼
 ┌─────────────────┐ ┌─────────────────┐ ┌─────────────────┐
-│  KuksoEconomy   │ │   LuckPerms     │ │   ChatManager   │
-│  (Built-in)     │ │   (External)    │ │   (External)    │
+│  MyEconomy      │ │   LuckPerms     │ │   ChatManager   │
+│  (External)     │ │   (External)    │ │   (External)    │
 └─────────────────┘ └─────────────────┘ └─────────────────┘
 ```
+
+**Lazy Activation Benefits:**
+- Zero overhead if no plugins use economy/permission/chat
+- Faster startup for servers that only need some features
+- Lower memory footprint
+- Cleaner logs (no "Economy module loaded" if not used)
 
 ### Package Structure
 
 ```
-com.kukso.hy.lib.service/
-├── ServiceManager.java          # Central registry for all services
-├── ServicePriority.java         # Priority enum (Lowest, Low, Normal, High, Highest)
-├── ServiceProvider.java         # Wrapper class for registered providers
-│
+com.kukso.hy.lib/
 ├── economy/
-│   ├── Economy.java             # Main economy interface
-│   ├── EconomyResponse.java     # Transaction response object
-│   ├── ResponseType.java        # SUCCESS, FAILURE, NOT_IMPLEMENTED
+│   ├── Economy.java              # Main economy interface (multi-currency)
+│   ├── EconomyResponse.java      # Transaction response object
+│   ├── ResponseType.java         # SUCCESS, FAILURE, NOT_IMPLEMENTED
+│   ├── Currency.java             # Currency metadata record
+│   ├── CurrencyComponent.java    # ECS component for player balances
+│   ├── CurrencyManager.java      # Currency registration & ECS management
 │   └── impl/
-│       └── KuksoEconomy.java    # Built-in SQLite/MySQL implementation
+│       └── KuksoEconomy.java     # Built-in SQLite/MySQL implementation
 │
 ├── permission/
-│   ├── Permission.java          # Main permission interface
+│   ├── Permission.java           # Main permission interface
 │   └── impl/
 │       └── DefaultPermission.java  # Fallback using Hytale's native system
 │
-└── chat/
-    ├── Chat.java                # Main chat interface
-    └── impl/
-        └── DefaultChat.java     # Fallback using ColorMan
+├── chat/
+│   ├── Chat.java                 # Main chat interface
+│   └── impl/
+│       └── DefaultChat.java      # Fallback using ColorMan
+│
+└── service/
+    ├── ServiceManager.java       # Central registry for all services
+    ├── ServicePriority.java      # Priority enum (Lowest, Low, Normal, High, Highest)
+    └── ServiceProvider.java      # Wrapper class for registered providers
 ```
 
 ---
 
 ## Economy API
 
+### Currency Record
+
+```java
+package com.kukso.hy.lib.economy;
+
+/**
+ * Represents currency metadata defined by economy plugins.
+ * Economy plugins register their currencies via CurrencyManager.register().
+ * Immutable record containing all configuration for a single currency type.
+ */
+public record Currency(
+    String id,              // "gold" - internal identifier
+    String displayName,     // "Gold" - display name for UI
+    String nameSingular,    // "Gold" - singular form
+    String namePlural,      // "Gold" - plural form
+    String symbol,          // "G" - currency symbol
+    String format,          // "{amount}{symbol}" - format pattern
+    int decimalPlaces,      // 0 - number of decimal places
+    double startingBalance, // 100.0 - initial balance for new players
+    String componentId      // "kuksolib:gold" - ECS ComponentType identifier
+) {
+    /**
+     * Formats an amount using this currency's format pattern.
+     * @param amount Amount to format
+     * @return Formatted string (e.g., "100G" or "50 💎")
+     */
+    public String formatAmount(double amount) {
+        String formatted = decimalPlaces == 0
+            ? String.valueOf((long) amount)
+            : String.format("%." + decimalPlaces + "f", amount);
+        return format
+            .replace("{amount}", formatted)
+            .replace("{symbol}", symbol);
+    }
+
+    /**
+     * Gets the appropriate name form based on amount.
+     * @param amount Amount to check
+     * @return Singular or plural name
+     */
+    public String getName(double amount) {
+        return amount == 1.0 ? nameSingular : namePlural;
+    }
+}
+```
+
 ### Interface Definition
 
 ```java
-package com.kukso.hy.lib.service.economy;
+package com.kukso.hy.lib.economy;
 
 import hytale.server.world.entity.player.Player;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 /**
  * The main Economy interface that all economy providers must implement.
+ * Supports multiple currencies with a default currency for convenience.
  * Plugins should use ServiceManager.getEconomy() to obtain an instance.
  */
 public interface Economy {
@@ -117,32 +182,92 @@ public interface Economy {
      */
     boolean isEnabled();
 
-    // ==================== Currency Info ====================
+    // ==================== Currency Registry ====================
 
     /**
-     * Gets the name of the currency in singular form.
-     * @return Currency name singular (e.g., "Dollar", "Coin", "Gold")
+     * Gets all registered currency IDs.
+     * @return Set of currency IDs (e.g., {"gold", "gems", "coins"})
      */
-    String currencyNameSingular();
+    Set<String> getCurrencies();
 
     /**
-     * Gets the name of the currency in plural form.
-     * @return Currency name plural (e.g., "Dollars", "Coins", "Gold")
+     * Gets the default currency ID.
+     * @return Default currency ID (e.g., "gold")
      */
-    String currencyNamePlural();
+    String getDefaultCurrency();
 
     /**
-     * Format the amount into a human-readable string.
+     * Gets currency metadata by ID.
+     * @param currencyId Currency identifier
+     * @return Currency info or null if not found
+     */
+    Currency getCurrency(String currencyId);
+
+    // ==================== Currency Info (with currencyId) ====================
+
+    /**
+     * Gets the name of a currency in singular form.
+     * @param currencyId Currency identifier
+     * @return Currency name singular (e.g., "Gold", "Gem", "Coin")
+     */
+    String currencyNameSingular(String currencyId);
+
+    /**
+     * Gets the name of a currency in plural form.
+     * @param currencyId Currency identifier
+     * @return Currency name plural (e.g., "Gold", "Gems", "Coins")
+     */
+    String currencyNamePlural(String currencyId);
+
+    /**
+     * Format an amount into a human-readable string for a specific currency.
+     * @param currencyId Currency identifier
      * @param amount Amount to format
-     * @return Formatted string (e.g., "$1,234.56" or "1,234 Coins")
+     * @return Formatted string (e.g., "100G", "50 💎", "$1,234.56")
      */
-    String format(double amount);
+    String format(String currencyId, double amount);
 
     /**
-     * Returns the number of fractional digits supported.
+     * Returns the number of fractional digits supported by a currency.
+     * @param currencyId Currency identifier
      * @return Number of digits after decimal (0 for whole numbers only)
      */
-    int fractionalDigits();
+    int fractionalDigits(String currencyId);
+
+    // ==================== Currency Info (default currency convenience) ====================
+
+    /**
+     * Gets the name of the default currency in singular form.
+     * @return Currency name singular
+     */
+    default String currencyNameSingular() {
+        return currencyNameSingular(getDefaultCurrency());
+    }
+
+    /**
+     * Gets the name of the default currency in plural form.
+     * @return Currency name plural
+     */
+    default String currencyNamePlural() {
+        return currencyNamePlural(getDefaultCurrency());
+    }
+
+    /**
+     * Format an amount using the default currency.
+     * @param amount Amount to format
+     * @return Formatted string
+     */
+    default String format(double amount) {
+        return format(getDefaultCurrency(), amount);
+    }
+
+    /**
+     * Returns the number of fractional digits for the default currency.
+     * @return Number of digits after decimal
+     */
+    default int fractionalDigits() {
+        return fractionalDigits(getDefaultCurrency());
+    }
 
     // ==================== Account Methods ====================
 
@@ -162,80 +287,150 @@ public interface Economy {
 
     /**
      * Creates a player account if one doesn't exist.
+     * Initializes all currencies with their starting balances.
      * @param player Player to create account for
      * @return true if account was created, false if already exists
      */
     boolean createPlayerAccount(Player player);
 
-    // ==================== Balance Methods ====================
+    // ==================== Balance Methods (with currencyId) ====================
 
     /**
-     * Gets the balance of a player.
+     * Gets the balance of a player for a specific currency.
+     * @param player Player to check
+     * @param currencyId Currency identifier
+     * @return Current balance
+     */
+    double getBalance(Player player, String currencyId);
+
+    /**
+     * Gets the balance of a player by UUID for a specific currency.
+     * @param uuid Player UUID
+     * @param currencyId Currency identifier
+     * @return Current balance
+     */
+    double getBalance(UUID uuid, String currencyId);
+
+    /**
+     * Checks if a player has at least the specified amount of a currency.
+     * @param player Player to check
+     * @param currencyId Currency identifier
+     * @param amount Amount to check
+     * @return true if player has at least that amount
+     */
+    boolean has(Player player, String currencyId, double amount);
+
+    // ==================== Balance Methods (default currency convenience) ====================
+
+    /**
+     * Gets the balance of a player for the default currency.
      * @param player Player to check
      * @return Current balance
      */
-    double getBalance(Player player);
+    default double getBalance(Player player) {
+        return getBalance(player, getDefaultCurrency());
+    }
 
     /**
-     * Gets the balance of a player by UUID (for offline players).
+     * Gets the balance of a player by UUID for the default currency.
      * @param uuid Player UUID
      * @return Current balance
      */
-    double getBalance(UUID uuid);
+    default double getBalance(UUID uuid) {
+        return getBalance(uuid, getDefaultCurrency());
+    }
 
     /**
-     * Checks if a player has at least the specified amount.
+     * Checks if a player has at least the specified amount of the default currency.
      * @param player Player to check
      * @param amount Amount to check
      * @return true if player has at least that amount
      */
-    boolean has(Player player, double amount);
+    default boolean has(Player player, double amount) {
+        return has(player, getDefaultCurrency(), amount);
+    }
 
-    // ==================== Transaction Methods ====================
+    // ==================== Transaction Methods (with currencyId) ====================
 
     /**
-     * Withdraws an amount from a player's account.
+     * Withdraws an amount of a specific currency from a player's account.
+     * @param player Player to withdraw from
+     * @param currencyId Currency identifier
+     * @param amount Amount to withdraw (must be positive)
+     * @return EconomyResponse with transaction result
+     */
+    EconomyResponse withdraw(Player player, String currencyId, double amount);
+
+    /**
+     * Deposits an amount of a specific currency into a player's account.
+     * @param player Player to deposit to
+     * @param currencyId Currency identifier
+     * @param amount Amount to deposit (must be positive)
+     * @return EconomyResponse with transaction result
+     */
+    EconomyResponse deposit(Player player, String currencyId, double amount);
+
+    /**
+     * Transfers a specific currency from one player to another.
+     * @param from Source player
+     * @param to Destination player
+     * @param currencyId Currency identifier
+     * @param amount Amount to transfer
+     * @return EconomyResponse with transaction result
+     */
+    default EconomyResponse transfer(Player from, Player to, String currencyId, double amount) {
+        EconomyResponse withdrawResponse = withdraw(from, currencyId, amount);
+        if (!withdrawResponse.isSuccess()) {
+            return withdrawResponse;
+        }
+        EconomyResponse depositResponse = deposit(to, currencyId, amount);
+        if (!depositResponse.isSuccess()) {
+            // Rollback the withdrawal
+            deposit(from, currencyId, amount);
+            return depositResponse;
+        }
+        return new EconomyResponse(
+            amount,
+            getBalance(from, currencyId),
+            ResponseType.SUCCESS,
+            "Transfer successful"
+        );
+    }
+
+    // ==================== Transaction Methods (default currency convenience) ====================
+
+    /**
+     * Withdraws an amount of the default currency from a player's account.
      * @param player Player to withdraw from
      * @param amount Amount to withdraw (must be positive)
      * @return EconomyResponse with transaction result
      */
-    EconomyResponse withdraw(Player player, double amount);
+    default EconomyResponse withdraw(Player player, double amount) {
+        return withdraw(player, getDefaultCurrency(), amount);
+    }
 
     /**
-     * Deposits an amount into a player's account.
+     * Deposits an amount of the default currency into a player's account.
      * @param player Player to deposit to
      * @param amount Amount to deposit (must be positive)
      * @return EconomyResponse with transaction result
      */
-    EconomyResponse deposit(Player player, double amount);
+    default EconomyResponse deposit(Player player, double amount) {
+        return deposit(player, getDefaultCurrency(), amount);
+    }
 
     /**
-     * Transfers money from one player to another.
+     * Transfers the default currency from one player to another.
      * @param from Source player
      * @param to Destination player
      * @param amount Amount to transfer
      * @return EconomyResponse with transaction result
      */
     default EconomyResponse transfer(Player from, Player to, double amount) {
-        EconomyResponse withdrawResponse = withdraw(from, amount);
-        if (!withdrawResponse.isSuccess()) {
-            return withdrawResponse;
-        }
-        EconomyResponse depositResponse = deposit(to, amount);
-        if (!depositResponse.isSuccess()) {
-            // Rollback the withdrawal
-            deposit(from, amount);
-            return depositResponse;
-        }
-        return new EconomyResponse(
-            amount,
-            getBalance(from),
-            ResponseType.SUCCESS,
-            "Transfer successful"
-        );
+        return transfer(from, to, getDefaultCurrency(), amount);
     }
 
-    // ==================== Bank Methods (Optional) ====================
+    // ==================== Bank Methods (Optional, with currencyId) ====================
 
     /**
      * Checks if this economy supports banks.
@@ -265,11 +460,12 @@ public interface Economy {
     }
 
     /**
-     * Gets the balance of a bank.
+     * Gets the balance of a bank for a specific currency.
      * @param name Bank name
+     * @param currencyId Currency identifier
      * @return EconomyResponse with balance
      */
-    default EconomyResponse bankBalance(String name) {
+    default EconomyResponse bankBalance(String name, String currencyId) {
         return new EconomyResponse(0, 0, ResponseType.NOT_IMPLEMENTED, "Banks not supported");
     }
 
@@ -283,22 +479,24 @@ public interface Economy {
     }
 
     /**
-     * Withdraws from a bank.
+     * Withdraws a specific currency from a bank.
      * @param name Bank name
+     * @param currencyId Currency identifier
      * @param amount Amount to withdraw
      * @return EconomyResponse with result
      */
-    default EconomyResponse bankWithdraw(String name, double amount) {
+    default EconomyResponse bankWithdraw(String name, String currencyId, double amount) {
         return new EconomyResponse(0, 0, ResponseType.NOT_IMPLEMENTED, "Banks not supported");
     }
 
     /**
-     * Deposits to a bank.
+     * Deposits a specific currency to a bank.
      * @param name Bank name
+     * @param currencyId Currency identifier
      * @param amount Amount to deposit
      * @return EconomyResponse with result
      */
-    default EconomyResponse bankDeposit(String name, double amount) {
+    default EconomyResponse bankDeposit(String name, String currencyId, double amount) {
         return new EconomyResponse(0, 0, ResponseType.NOT_IMPLEMENTED, "Banks not supported");
     }
 
@@ -335,7 +533,7 @@ public interface Economy {
 ### Response Object
 
 ```java
-package com.kukso.hy.lib.service.economy;
+package com.kukso.hy.lib.economy;
 
 /**
  * Represents the result of an economy transaction.
@@ -399,6 +597,353 @@ public enum ResponseType {
 }
 ```
 
+### CurrencyComponent (ECS Component)
+
+```java
+package com.kukso.hy.lib.economy;
+
+import hytale.server.ecs.Component;
+import hytale.server.ecs.EntityStore;
+
+/**
+ * ECS component for storing a player's balance in a specific currency.
+ * One component instance per currency per player entity.
+ *
+ * Each currency has its own ComponentType registered dynamically via CurrencyManager.
+ * For example:
+ *   - ComponentType<EntityStore, CurrencyComponent> for "kuksolib:gold"
+ *   - ComponentType<EntityStore, CurrencyComponent> for "kuksolib:gems"
+ *
+ * The same CurrencyComponent class is reused, but different ComponentType instances
+ * allow the ECS to store multiple currency balances per entity.
+ */
+public class CurrencyComponent implements Component<EntityStore> {
+
+    private double balance;
+    private final String currencyId;
+
+    /**
+     * Creates a new currency component.
+     * @param currencyId The currency identifier (e.g., "gold")
+     * @param initialBalance Starting balance (clamped to 0 minimum)
+     */
+    public CurrencyComponent(String currencyId, double initialBalance) {
+        this.currencyId = currencyId;
+        this.balance = Math.max(0.0, initialBalance);
+    }
+
+    /**
+     * Gets the currency identifier.
+     * @return Currency ID (e.g., "gold", "gems")
+     */
+    public String getCurrencyId() {
+        return currencyId;
+    }
+
+    /**
+     * Gets the current balance.
+     * @return Current balance
+     */
+    public double getBalance() {
+        return balance;
+    }
+
+    /**
+     * Sets the balance directly.
+     * @param balance New balance (clamped to 0 minimum)
+     */
+    public void setBalance(double balance) {
+        this.balance = Math.max(0.0, balance);
+    }
+
+    /**
+     * Deposits an amount into this balance.
+     * @param amount Amount to deposit (must be positive)
+     * @return true if successful
+     */
+    public boolean deposit(double amount) {
+        if (amount <= 0) {
+            return false;
+        }
+        this.balance += amount;
+        return true;
+    }
+
+    /**
+     * Withdraws an amount from this balance.
+     * @param amount Amount to withdraw (must be positive)
+     * @return true if successful (sufficient funds)
+     */
+    public boolean withdraw(double amount) {
+        if (amount <= 0 || amount > balance) {
+            return false;
+        }
+        this.balance -= amount;
+        return true;
+    }
+
+    /**
+     * Checks if this balance has at least the specified amount.
+     * @param amount Amount to check
+     * @return true if balance >= amount
+     */
+    public boolean has(double amount) {
+        return balance >= amount;
+    }
+
+    @Override
+    public CurrencyComponent clone() {
+        return new CurrencyComponent(currencyId, balance);
+    }
+
+    @Override
+    public String toString() {
+        return "CurrencyComponent{currencyId='" + currencyId + "', balance=" + balance + "}";
+    }
+}
+```
+
+### CurrencyManager
+
+```java
+package com.kukso.hy.lib.economy;
+
+import hytale.server.ecs.ComponentType;
+import hytale.server.ecs.EntityStore;
+import hytale.server.world.entity.player.Player;
+
+import java.util.Collections;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+/**
+ * Manages currency definitions and their ECS ComponentTypes.
+ * Economy plugins register their currencies via the register() method.
+ *
+ * Architecture:
+ * - Each currency registered gets its own ComponentType<EntityStore, CurrencyComponent>
+ * - ComponentType IDs follow the pattern specified in the Currency record (e.g., "myeconomy:gold")
+ * - The same CurrencyComponent class is used for all currencies
+ * - Multiple ComponentTypes allow players to have separate balances per currency
+ *
+ * Example usage (in an economy plugin):
+ * {@code
+ * CurrencyManager.register(new Currency(
+ *     "gold", "Gold", "Gold", "Gold", "G", "{amount}{symbol}", 0, 100.0, "myeconomy:gold"
+ * ));
+ * CurrencyManager.register(new Currency(
+ *     "gems", "Gems", "Gem", "Gems", "💎", "{amount} {symbol}", 0, 0.0, "myeconomy:gems"
+ * ));
+ * CurrencyManager.setDefaultCurrency("gold");
+ * }
+ */
+public class CurrencyManager {
+
+    private static final Logger LOGGER = Logger.getLogger(CurrencyManager.class.getName());
+
+    // Currency ID -> Currency metadata
+    private static final Map<String, Currency> currencies = new ConcurrentHashMap<>();
+
+    // Currency ID -> ComponentType for ECS
+    private static final Map<String, ComponentType<EntityStore, CurrencyComponent>> componentTypes = new ConcurrentHashMap<>();
+
+    // Default currency ID (set by the economy plugin)
+    private static String defaultCurrencyId = null;
+
+    // ==================== Currency Registration API ====================
+
+    /**
+     * Registers a currency. Called by economy plugins to define their currencies.
+     * This is the primary way currencies are added to the system.
+     *
+     * @param currency Currency to register
+     * @throws IllegalArgumentException if currency with same ID already exists
+     */
+    public static void register(Currency currency) {
+        if (currencies.containsKey(currency.id())) {
+            throw new IllegalArgumentException("Currency '" + currency.id() + "' is already registered");
+        }
+
+        currencies.put(currency.id(), currency);
+        registerComponentType(currency);
+
+        LOGGER.log(Level.INFO, "Registered currency: " + currency.id() +
+            " (component: " + currency.componentId() + ")");
+
+        // Set as default if this is the first currency
+        if (defaultCurrencyId == null) {
+            defaultCurrencyId = currency.id();
+            LOGGER.log(Level.INFO, "Set default currency: " + currency.id());
+        }
+    }
+
+    /**
+     * Unregisters a currency. Called when an economy plugin shuts down.
+     *
+     * @param currencyId Currency ID to unregister
+     */
+    public static void unregister(String currencyId) {
+        currencies.remove(currencyId);
+        componentTypes.remove(currencyId);
+
+        // Update default if we removed the default currency
+        if (currencyId.equals(defaultCurrencyId)) {
+            defaultCurrencyId = currencies.isEmpty() ? null : currencies.keySet().iterator().next();
+        }
+
+        LOGGER.log(Level.INFO, "Unregistered currency: " + currencyId);
+    }
+
+    /**
+     * Sets the default currency ID.
+     * Called by the economy plugin after registering currencies.
+     *
+     * @param currencyId Currency ID to set as default
+     * @throws IllegalArgumentException if currency is not registered
+     */
+    public static void setDefaultCurrency(String currencyId) {
+        if (!currencies.containsKey(currencyId)) {
+            throw new IllegalArgumentException("Currency '" + currencyId + "' is not registered");
+        }
+        defaultCurrencyId = currencyId;
+        LOGGER.log(Level.INFO, "Default currency set to: " + currencyId);
+    }
+
+    /**
+     * Clears all registered currencies.
+     * Called during shutdown.
+     */
+    public static void clear() {
+        currencies.clear();
+        componentTypes.clear();
+        defaultCurrencyId = null;
+    }
+
+    /**
+     * Registers a ComponentType for a currency with the ECS system.
+     */
+    private static void registerComponentType(Currency currency) {
+        // Create ComponentType with the currency's componentId (e.g., "myeconomy:gold")
+        ComponentType<EntityStore, CurrencyComponent> componentType =
+            ComponentType.create(currency.componentId(), CurrencyComponent.class);
+
+        componentTypes.put(currency.id(), componentType);
+    }
+
+    // ==================== Query API ====================
+
+    /**
+     * Gets all registered currency IDs.
+     * @return Unmodifiable set of currency IDs
+     */
+    public static Set<String> getCurrencyIds() {
+        return Collections.unmodifiableSet(currencies.keySet());
+    }
+
+    /**
+     * Gets the default currency ID.
+     * @return Default currency ID, or null if no currencies registered
+     */
+    public static String getDefaultCurrencyId() {
+        return defaultCurrencyId;
+    }
+
+    /**
+     * Gets currency metadata by ID.
+     * @param currencyId Currency identifier
+     * @return Currency or null if not found
+     */
+    public static Currency getCurrency(String currencyId) {
+        return currencies.get(currencyId);
+    }
+
+    /**
+     * Checks if any currencies are registered.
+     * @return true if at least one currency is registered
+     */
+    public static boolean hasCurrencies() {
+        return !currencies.isEmpty();
+    }
+
+    /**
+     * Gets the ComponentType for a currency.
+     * Used to access the currency component on player entities.
+     *
+     * @param currencyId Currency identifier
+     * @return ComponentType or null if not found
+     */
+    public static ComponentType<EntityStore, CurrencyComponent> getComponentType(String currencyId) {
+        return componentTypes.get(currencyId);
+    }
+
+    // ==================== Player Management ====================
+
+    /**
+     * Initializes all currency components for a player entity.
+     * Called when a player joins or account is created.
+     *
+     * @param player Player to initialize
+     */
+    public static void initializePlayer(Player player) {
+        EntityStore store = player.getEntityStore();
+        for (Currency currency : currencies.values()) {
+            ComponentType<EntityStore, CurrencyComponent> type = componentTypes.get(currency.id());
+            if (type != null && !store.hasComponent(type)) {
+                CurrencyComponent component = new CurrencyComponent(
+                    currency.id(),
+                    currency.startingBalance()
+                );
+                store.addComponent(type, component);
+            }
+        }
+    }
+
+    /**
+     * Gets the ECS balance of a specific currency for a player.
+     * This reads directly from the ECS component.
+     *
+     * @param player Player to check
+     * @param currencyId Currency identifier
+     * @return Balance or 0.0 if not found
+     */
+    public static double getEcsBalance(Player player, String currencyId) {
+        ComponentType<EntityStore, CurrencyComponent> type = componentTypes.get(currencyId);
+        if (type == null) {
+            return 0.0;
+        }
+        CurrencyComponent component = player.getEntityStore().getComponent(type);
+        return component != null ? component.getBalance() : 0.0;
+    }
+
+    /**
+     * Modifies the ECS balance of a specific currency for a player.
+     *
+     * @param player Player to modify
+     * @param currencyId Currency identifier
+     * @param amount Amount to add (positive) or subtract (negative)
+     * @return true if successful
+     */
+    public static boolean modifyEcsBalance(Player player, String currencyId, double amount) {
+        ComponentType<EntityStore, CurrencyComponent> type = componentTypes.get(currencyId);
+        if (type == null) {
+            return false;
+        }
+        CurrencyComponent component = player.getEntityStore().getComponent(type);
+        if (component == null) {
+            return false;
+        }
+        if (amount >= 0) {
+            return component.deposit(amount);
+        } else {
+            return component.withdraw(-amount);
+        }
+    }
+}
+```
+
 ---
 
 ## Permission API
@@ -406,7 +951,7 @@ public enum ResponseType {
 ### Interface Definition
 
 ```java
-package com.kukso.hy.lib.service.permission;
+package com.kukso.hy.lib.permission;
 
 import hytale.server.world.entity.player.Player;
 import java.util.List;
@@ -438,12 +983,6 @@ public interface Permission {
      */
     boolean hasGroupSupport();
 
-    /**
-     * Checks if this provider supports superperms bridge.
-     * @return true if superperms is supported
-     */
-    boolean hasSuperPermsCompat();
-
     // ==================== Permission Check ====================
 
     /**
@@ -463,13 +1002,13 @@ public interface Permission {
     boolean has(UUID uuid, String permission);
 
     /**
-     * Checks if a player has a permission in a specific world.
+     * Checks if a player has a permission in a specific dimension.
      * @param player Player to check
-     * @param world World name
+     * @param dimension Dimension name
      * @param permission Permission node
-     * @return true if player has the permission in that world
+     * @return true if player has the permission in that dimension
      */
-    default boolean has(Player player, String world, String permission) {
+    default boolean has(Player player, String dimension, String permission) {
         return has(player, permission);
     }
 
@@ -589,7 +1128,7 @@ public interface Permission {
 ### Interface Definition
 
 ```java
-package com.kukso.hy.lib.service.chat;
+package com.kukso.hy.lib.chat;
 
 import hytale.server.world.entity.player.Player;
 import java.util.UUID;
@@ -736,58 +1275,156 @@ public interface Chat {
 
 ## Service Manager
 
-### Central Registry
+### Central Registry (with Lazy Activation)
 
 ```java
 package com.kukso.hy.lib.service;
 
-import com.kukso.hy.lib.service.economy.Economy;
-import com.kukso.hy.lib.service.permission.Permission;
-import com.kukso.hy.lib.service.chat.Chat;
+import com.kukso.hy.lib.economy.Economy;
+import com.kukso.hy.lib.economy.CurrencyManager;
+import com.kukso.hy.lib.permission.Permission;
+import com.kukso.hy.lib.chat.Chat;
 import hytale.server.plugin.JavaPlugin;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Central registry for all KuksoLib services.
  * Manages registration, priority, and retrieval of service providers.
+ *
+ * Uses LAZY ACTIVATION pattern:
+ * - Economy, Permission, and Chat modules are dormant by default
+ * - Modules only activate when a plugin registers to use that service
+ * - No database connections, event listeners, or ECS components are loaded until needed
+ * - Servers that don't need all features have zero overhead from unused modules
  */
 public class ServiceManager {
 
+    private static final Logger LOGGER = Logger.getLogger(ServiceManager.class.getName());
+
     private static final Map<Class<?>, TreeSet<ServiceProvider<?>>> providers = new ConcurrentHashMap<>();
 
-    // ==================== Registration ====================
+    // ==================== Lazy Activation State ====================
+
+    private static final AtomicBoolean economyActive = new AtomicBoolean(false);
+    private static final AtomicBoolean permissionActive = new AtomicBoolean(false);
+    private static final AtomicBoolean chatActive = new AtomicBoolean(false);
+
+    // Database manager instance (created lazily)
+    private static EconomyDatabaseManager databaseManager = null;
+
+    // ==================== Registration with Lazy Activation ====================
 
     /**
      * Registers an economy provider.
+     * On first registration, activates the Economy module (database, ECS, listeners).
+     *
      * @param plugin Plugin registering the provider
      * @param provider Economy implementation
      * @param priority Registration priority
      */
     public static void registerEconomy(JavaPlugin plugin, Economy provider, ServicePriority priority) {
+        // Lazy activation on first economy registration
+        if (economyActive.compareAndSet(false, true)) {
+            activateEconomyModule(plugin);
+        }
         register(Economy.class, plugin, provider, priority);
     }
 
     /**
      * Registers a permission provider.
+     * On first registration, activates the Permission module.
+     *
      * @param plugin Plugin registering the provider
      * @param provider Permission implementation
      * @param priority Registration priority
      */
     public static void registerPermission(JavaPlugin plugin, Permission provider, ServicePriority priority) {
+        // Lazy activation on first permission registration
+        if (permissionActive.compareAndSet(false, true)) {
+            activatePermissionModule(plugin);
+        }
         register(Permission.class, plugin, provider, priority);
     }
 
     /**
      * Registers a chat provider.
+     * On first registration, activates the Chat module.
+     *
      * @param plugin Plugin registering the provider
      * @param provider Chat implementation
      * @param priority Registration priority
      */
     public static void registerChat(JavaPlugin plugin, Chat provider, ServicePriority priority) {
+        // Lazy activation on first chat registration
+        if (chatActive.compareAndSet(false, true)) {
+            activateChatModule(plugin);
+        }
         register(Chat.class, plugin, provider, priority);
     }
+
+    // ==================== Module Activation ====================
+
+    /**
+     * Activates the Economy module.
+     * Called automatically on first economy provider registration.
+     */
+    private static void activateEconomyModule(JavaPlugin plugin) {
+        LOGGER.log(Level.INFO, "Economy module activated by " + plugin.getName());
+
+        // Initialize database connection (using KuksoLib's config)
+        databaseManager = new EconomyDatabaseManager();
+        databaseManager.initialize();
+
+        // Register player join/quit listeners for ECS component initialization
+        registerEconomyListeners(plugin);
+
+        LOGGER.log(Level.INFO, "Economy module ready - database connected, listeners registered");
+    }
+
+    /**
+     * Activates the Permission module.
+     * Called automatically on first permission provider registration.
+     */
+    private static void activatePermissionModule(JavaPlugin plugin) {
+        LOGGER.log(Level.INFO, "Permission module activated by " + plugin.getName());
+        // Permission module initialization (if needed)
+    }
+
+    /**
+     * Activates the Chat module.
+     * Called automatically on first chat provider registration.
+     */
+    private static void activateChatModule(JavaPlugin plugin) {
+        LOGGER.log(Level.INFO, "Chat module activated by " + plugin.getName());
+        // Chat module initialization (if needed)
+    }
+
+    /**
+     * Registers event listeners for economy (player join/quit).
+     */
+    private static void registerEconomyListeners(JavaPlugin plugin) {
+        // Register listeners for:
+        // - Player join: Initialize CurrencyComponents, load from DB
+        // - Player quit: Sync ECS to DB, cleanup
+    }
+
+    // ==================== Database Access ====================
+
+    /**
+     * Gets the database manager for economy operations.
+     * Only available after economy module is activated.
+     *
+     * @return Database manager, or null if economy not active
+     */
+    public static EconomyDatabaseManager getDatabaseManager() {
+        return databaseManager;
+    }
+
+    // ==================== Generic Registration ====================
 
     /**
      * Generic service registration method.
@@ -801,7 +1438,7 @@ public class ServiceManager {
             return a.getPlugin().getName().compareTo(b.getPlugin().getName());
         })).add(new ServiceProvider<>(plugin, provider, priority));
 
-        plugin.getLogger().at(Level.INFO).log(
+        LOGGER.log(Level.INFO,
             "Registered " + serviceClass.getSimpleName() + " provider: " +
             provider.getClass().getSimpleName() + " (priority: " + priority + ")"
         );
@@ -874,10 +1511,25 @@ public class ServiceManager {
     }
 
     /**
-     * Clears all registered services (for shutdown).
+     * Clears all registered services and shuts down activated modules.
      */
     public static void shutdown() {
+        // Shutdown database if economy was active
+        if (economyActive.get() && databaseManager != null) {
+            databaseManager.shutdown();
+            databaseManager = null;
+        }
+
+        // Clear currencies
+        CurrencyManager.clear();
+
+        // Reset activation state
+        economyActive.set(false);
+        permissionActive.set(false);
+        chatActive.set(false);
+
         providers.clear();
+        LOGGER.log(Level.INFO, "ServiceManager shutdown complete");
     }
 
     // ==================== Status ====================
@@ -901,6 +1553,27 @@ public class ServiceManager {
      */
     public static boolean hasChat() {
         return getChat() != null;
+    }
+
+    /**
+     * Checks if the economy module has been activated.
+     */
+    public static boolean isEconomyActive() {
+        return economyActive.get();
+    }
+
+    /**
+     * Checks if the permission module has been activated.
+     */
+    public static boolean isPermissionActive() {
+        return permissionActive.get();
+    }
+
+    /**
+     * Checks if the chat module has been activated.
+     */
+    public static boolean isChatActive() {
+        return chatActive.get();
     }
 }
 ```
@@ -966,10 +1639,11 @@ public class ServiceProvider<T> {
 
 ```java
 import com.kukso.hy.lib.service.ServiceManager;
-import com.kukso.hy.lib.service.economy.Economy;
-import com.kukso.hy.lib.service.economy.EconomyResponse;
-import com.kukso.hy.lib.service.permission.Permission;
-import com.kukso.hy.lib.service.chat.Chat;
+import com.kukso.hy.lib.economy.Economy;
+import com.kukso.hy.lib.economy.EconomyResponse;
+import com.kukso.hy.lib.economy.Currency;
+import com.kukso.hy.lib.permission.Permission;
+import com.kukso.hy.lib.chat.Chat;
 
 public class MyPlugin extends JavaPlugin {
 
@@ -985,13 +1659,36 @@ public class MyPlugin extends JavaPlugin {
         Permission perms = ServiceManager.getPermission();
         Chat chat = ServiceManager.getChat();
 
-        // Example: Give player money
         Player player = /* get player */;
+
+        // Example: Give player gold (default currency)
         EconomyResponse response = econ.deposit(player, 100.0);
         if (response.isSuccess()) {
             player.sendMessage("You received " + econ.format(100.0) + "!");
-        } else {
-            player.sendMessage("Error: " + response.getErrorMessage());
+        }
+
+        // Example: Give player gems (specific currency)
+        EconomyResponse gemsResponse = econ.deposit(player, "gems", 50.0);
+        if (gemsResponse.isSuccess()) {
+            player.sendMessage("You received " + econ.format("gems", 50.0) + "!");
+        }
+
+        // Example: Check player's balance in multiple currencies
+        double goldBalance = econ.getBalance(player);           // Default currency
+        double gemsBalance = econ.getBalance(player, "gems");   // Specific currency
+
+        // Example: List all available currencies
+        for (String currencyId : econ.getCurrencies()) {
+            Currency currency = econ.getCurrency(currencyId);
+            double balance = econ.getBalance(player, currencyId);
+            player.sendMessage(currency.displayName() + ": " + currency.formatAmount(balance));
+        }
+
+        // Example: Transfer gems between players
+        Player otherPlayer = /* get other player */;
+        EconomyResponse transferResponse = econ.transfer(player, otherPlayer, "gems", 10.0);
+        if (transferResponse.isSuccess()) {
+            player.sendMessage("Transferred 10 gems!");
         }
 
         // Example: Check permission
@@ -1013,9 +1710,9 @@ public class MyPlugin extends JavaPlugin {
 ```java
 import com.kukso.hy.lib.service.ServiceManager;
 import com.kukso.hy.lib.service.ServicePriority;
-import com.kukso.hy.lib.service.economy.Economy;
-import com.kukso.hy.lib.service.economy.EconomyResponse;
-import com.kukso.hy.lib.service.economy.ResponseType;
+import com.kukso.hy.lib.economy.Economy;
+import com.kukso.hy.lib.economy.EconomyResponse;
+import com.kukso.hy.lib.economy.ResponseType;
 
 public class MyEconomyPlugin extends JavaPlugin {
 
@@ -1072,44 +1769,109 @@ public class MyEconomyPlugin extends JavaPlugin {
 
 ## Built-in Implementations
 
-### KuksoEconomy (Built-in Economy)
+### Economy Infrastructure
 
-KuksoLib provides a built-in economy implementation with:
+KuksoLib provides the infrastructure for economy systems that plugins can use:
 
+- **Multi-currency support** - Economy plugins define their currencies via `CurrencyManager.register()`
+- **ECS-based storage** - Uses Hytale's native ECS with `CurrencyComponent` per currency
 - **SQLite backend** (default) - Zero configuration required
 - **MySQL backend** (optional) - For multi-server setups
-- **Configurable currency** - Name, symbol, decimal places
 - **Transaction logging** - Full audit trail
-- **Top balances** - `/balance top` support
+- **Admin query** - `/kuksolib wallet <player>` to inspect player balances and verify ECS/DB sync
+- **Lazy activation** - Database and listeners only load when an economy plugin registers
 
-Configuration (`plugins/KuksoLib/economy.yml`):
-```yaml
-# Database settings
-database:
-  type: sqlite  # or 'mysql'
-  mysql:
-    host: localhost
-    port: 3306
-    database: kuksolib
-    username: root
-    password: ""
+**Note:** KuksoLib is a library/API layer. Currencies are defined by economy plugins, not in KuksoLib's config. User-facing commands like `/balance`, `/pay`, `/give`, `/take` should be implemented by a separate economy plugin that depends on KuksoLib.
 
-# Currency settings
-currency:
-  name-singular: "Coin"
-  name-plural: "Coins"
-  symbol: "$"
-  format: "{symbol}{amount}"  # e.g., "$1,234.56"
-  decimal-places: 2
+**KuksoLib Configuration** (`plugins/KuksoLib/config.json`):
 
-# Starting balance
-starting-balance: 100.0
+KuksoLib's config only contains database and logging settings. Currencies are defined by economy plugins.
 
-# Transaction logging
-logging:
-  enabled: true
-  log-file: "transactions.log"
+```json
+{
+  "database": {
+    "type": "sqlite",
+    "mysql": {
+      "host": "localhost",
+      "port": 3306,
+      "database": "kuksolib",
+      "username": "root",
+      "password": ""
+    }
+  },
+  "logging": {
+    "enabled": true,
+    "logFile": "transactions.log"
+  }
+}
 ```
+
+**Economy Plugin Example** (defines currencies and registers as provider):
+
+```java
+public class MyEconomyPlugin extends JavaPlugin implements Economy {
+
+    @Override
+    public void start() {
+        // Define currencies (these are NOT in KuksoLib's config)
+        CurrencyManager.register(new Currency(
+            "gold", "Gold", "Gold", "Gold", "G", "{amount}{symbol}", 0, 100.0, "myeconomy:gold"
+        ));
+        CurrencyManager.register(new Currency(
+            "gems", "Gems", "Gem", "Gems", "💎", "{amount} {symbol}", 0, 0.0, "myeconomy:gems"
+        ));
+        CurrencyManager.register(new Currency(
+            "coins", "Coins", "Coin", "Coins", "$", "{symbol}{amount}", 2, 0.0, "myeconomy:coins"
+        ));
+        CurrencyManager.setDefaultCurrency("gold");
+
+        // Register as economy provider (this activates KuksoLib's economy module)
+        ServiceManager.registerEconomy(this, this, ServicePriority.NORMAL);
+    }
+
+    @Override
+    public void shutdown() {
+        // Unregister currencies
+        CurrencyManager.unregister("gold");
+        CurrencyManager.unregister("gems");
+        CurrencyManager.unregister("coins");
+
+        // Unregister as provider
+        ServiceManager.unregisterAll(this);
+    }
+
+    // Implement Economy interface methods...
+    @Override
+    public String getName() { return "MyEconomyPlugin"; }
+
+    @Override
+    public Set<String> getCurrencies() { return CurrencyManager.getCurrencyIds(); }
+
+    @Override
+    public String getDefaultCurrency() { return CurrencyManager.getDefaultCurrencyId(); }
+
+    // ... other Economy methods
+}
+```
+
+### `/kuksolib wallet <player>` Command
+
+Shows both ECS component data and database backend data side-by-side for debugging and verification:
+
+```
+/kuksolib wallet Steve
+────────────────────────────────────
+Wallet Info for: Steve
+────────────────────────────────────
+Currency    │ ECS Component │ Database │ Status
+────────────────────────────────────
+gold        │ 150.0         │ 150.0    │ ✓ Synced
+gems        │ 50.0          │ 50.0     │ ✓ Synced
+coins       │ 25.50         │ 25.00    │ ⚠ Mismatch!
+────────────────────────────────────
+```
+
+This helps admins verify that ECS components (in-memory, fast access) are in sync with the database backend (persistent storage).
 
 ### DefaultPermission (Fallback Permission)
 
@@ -1129,19 +1891,28 @@ Uses ColorMan for basic formatting:
 
 ## Implementation Roadmap
 
+### Phase 0: Configuration System ✅ COMPLETED
+- [x] Create general `config.json` structure for KuksoLib
+- [x] Add config sections for each module (economy, permission, locale, chat)
+- [x] Add multi-currency configuration support in `economy.currencies`
+- [x] Add `Currency` record for currency metadata
+
 ### Phase 1: Core Infrastructure
-- [ ] Implement `ServiceManager` with registration/retrieval
-- [ ] Implement `ServicePriority` enum
-- [ ] Implement `ServiceProvider` wrapper class
+- [x] Implement `ServiceManager` with registration/retrieval
+- [x] Implement `ServicePriority` enum
+- [x] Implement `ServiceProvider` wrapper class
 - [ ] Add service status commands to `/kuksolib`
 
-### Phase 2: Economy API
-- [ ] Define `Economy` interface
-- [ ] Define `EconomyResponse` and `ResponseType`
-- [ ] Implement `KuksoEconomy` with SQLite backend
+### Phase 2: Economy API ✅ COMPLETED
+- [x] Define `Economy` interface with multi-currency support
+- [x] Define `EconomyResponse` and `ResponseType`
+- [x] Define `Currency` record for currency metadata
+- [x] Implement `CurrencyManager` for dynamic currency registration
+- [x] Implement `CurrencyComponent` (ECS component for player balances)
+- [x] Implement `KuksoEconomy` with SQLite backend and multi-currency
 - [ ] Add MySQL support to `KuksoEconomy`
-- [ ] Add economy commands (`/balance`, `/pay`, `/eco`)
-- [ ] Add transaction logging
+- [x] Add `/kuksolib wallet <player>` admin query command
+- [x] Add transaction logging
 
 ### Phase 3: Permission API
 - [ ] Define `Permission` interface
@@ -1165,15 +1936,15 @@ Uses ColorMan for basic formatting:
 
 ## Permissions
 
-KuksoLib service commands use the following permissions:
+KuksoLib library commands use the following permissions:
 
 | Permission | Description | Default |
 |------------|-------------|---------|
 | `kuksolib.admin` | Full admin access | OP |
-| `kuksolib.economy.balance` | View own balance | All |
-| `kuksolib.economy.balance.others` | View others' balance | OP |
-| `kuksolib.economy.pay` | Send money to players | All |
-| `kuksolib.economy.admin` | Admin economy commands | OP |
+| `kuksolib.wallet` | Use `/kuksolib wallet` to query player balances | OP |
+| `kuksolib.reload` | Reload KuksoLib configuration | OP |
+
+**Note:** User-facing economy permissions (e.g., `economy.balance`, `economy.pay`) should be defined by the economy plugin that implements the commands, not by KuksoLib.
 
 ---
 
@@ -1209,6 +1980,9 @@ ServiceProviderChangeEvent   // Fired when active provider changes
 
 ## FAQ
 
+**Q: Does KuksoLib provide user-facing economy commands?**
+A: No. KuksoLib is a library that provides the Economy API, database backend, and ECS infrastructure. Commands like `/balance`, `/pay`, `/give`, `/take` should be implemented by a separate economy plugin that depends on KuksoLib. KuksoLib only provides `/kuksolib wallet <player>` for admin queries.
+
 **Q: Do I need to soft-depend on KuksoLib?**
 A: Yes, if you want to use the services but not require them. Use `depend` if your plugin requires economy/permissions.
 
@@ -1216,10 +1990,10 @@ A: Yes, if you want to use the services but not require them. Use `depend` if yo
 A: Yes, but only the highest priority one will be used. Use `ServiceManager.getProviders(Economy.class)` to access all.
 
 **Q: How do I migrate from another economy plugin?**
-A: KuksoLib will provide migration commands for popular economy plugins once the ecosystem develops.
+A: Migration should be handled by the economy plugin using KuksoLib, not by KuksoLib itself.
 
 **Q: Is the economy persistent across server restarts?**
-A: Yes, the built-in KuksoEconomy uses SQLite/MySQL for persistent storage.
+A: Yes, the built-in KuksoEconomy backend uses SQLite/MySQL for persistent storage.
 
 ---
 

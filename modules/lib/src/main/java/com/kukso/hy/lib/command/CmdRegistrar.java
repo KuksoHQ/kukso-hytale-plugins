@@ -28,11 +28,12 @@ public final class CmdRegistrar {
         mgr.register(new ReloadCmd(plugin));
         mgr.register(new VersionCmd(plugin));
         mgr.register(new TestCmd());
+        mgr.register(new WalletCmd());
         //mgr.register(new EconomyCmd());
 
         // Register the main command with the plugin's command registry
         plugin.getCommandRegistry().registerCommand(mgr);
 
-        LOGGER.atInfo().log( "Commands (5) registered for " + plugin.getIdentifier().getName());
+        LOGGER.atInfo().log("Commands (6) registered for " + plugin.getIdentifier().getName());
     }
 }

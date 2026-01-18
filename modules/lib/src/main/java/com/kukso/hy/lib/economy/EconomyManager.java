@@ -4,26 +4,112 @@ import com.hypixel.hytale.component.ComponentType;
 import com.hypixel.hytale.logger.HytaleLogger;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
+import com.kukso.hy.lib.config.ConfigManager;
+import com.kukso.hy.lib.config.KuksoConfig;
 import com.kukso.hy.lib.util.HytaleUtils;
 
 import java.lang.reflect.Constructor;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Manages economy transactions using Hytale's Entity Component System (ECS).
  * Thread-safe singleton implementation for managing player wallets.
+ * Reads currency configuration from ConfigManager.
  */
 public class EconomyManager {
 
     private static final HytaleLogger LOGGER = HytaleLogger.forEnclosingClass();
     private static EconomyManager instance;
     private static final double DEFAULT_BALANCE = 0.0;
-    private static final double STARTING_BALANCE = 100.0;
 
     private EntityStore entityStore;
+    private final Map<String, Currency> currencies = new ConcurrentHashMap<>();
+    private String defaultCurrencyId;
 
     public EconomyManager() {
         instance = this;
         initializeComponentType();
+        loadCurrenciesFromConfig();
+    }
+
+    /**
+     * Loads currencies from the ConfigManager.
+     * Called during initialization and on config reload.
+     */
+    private void loadCurrenciesFromConfig() {
+        currencies.clear();
+
+        KuksoConfig.EconomyConfig economyConfig = ConfigManager.getEconomy();
+        if (economyConfig == null || !economyConfig.isEnabled()) {
+            LOGGER.atWarning().log("Economy is disabled in config");
+            return;
+        }
+
+        // Load currencies from config
+        for (Currency currency : economyConfig.toCurrencyRecords()) {
+            currencies.put(currency.id(), currency);
+            LOGGER.atInfo().log("Loaded currency: " + currency.id() +
+                " (" + currency.displayName() + ") starting balance: " + currency.startingBalance());
+        }
+
+        // Set default currency
+        defaultCurrencyId = economyConfig.getDefaultCurrency();
+        if (defaultCurrencyId != null && !currencies.containsKey(defaultCurrencyId)) {
+            LOGGER.atWarning().log("Default currency '" + defaultCurrencyId + "' not found in config");
+            if (!currencies.isEmpty()) {
+                defaultCurrencyId = currencies.keySet().iterator().next();
+                LOGGER.atInfo().log("Using '" + defaultCurrencyId + "' as default currency");
+            }
+        }
+
+        LOGGER.atInfo().log("Loaded " + currencies.size() + " currencies, default: " + defaultCurrencyId);
+    }
+
+    /**
+     * Reloads currencies from config.
+     * Called when config is reloaded.
+     */
+    public void reloadConfig() {
+        loadCurrenciesFromConfig();
+    }
+
+    /**
+     * Gets the default currency.
+     *
+     * @return The default currency, or null if none configured
+     */
+    public Currency getDefaultCurrency() {
+        return defaultCurrencyId != null ? currencies.get(defaultCurrencyId) : null;
+    }
+
+    /**
+     * Gets a currency by ID.
+     *
+     * @param currencyId The currency ID
+     * @return The currency, or null if not found
+     */
+    public Currency getCurrency(String currencyId) {
+        return currencies.get(currencyId);
+    }
+
+    /**
+     * Gets all registered currencies.
+     *
+     * @return Map of currency ID to Currency
+     */
+    public Map<String, Currency> getCurrencies() {
+        return currencies;
+    }
+
+    /**
+     * Gets the starting balance for new players using the default currency.
+     *
+     * @return The starting balance
+     */
+    public double getStartingBalance() {
+        Currency defaultCurrency = getDefaultCurrency();
+        return defaultCurrency != null ? defaultCurrency.startingBalance() : DEFAULT_BALANCE;
     }
 
     /**
@@ -96,10 +182,11 @@ public class EconomyManager {
 
             // Create new wallet with starting balance if it doesn't exist
             if (wallet == null) {
-                wallet = new WalletComponent(STARTING_BALANCE);
+                double startingBalance = getStartingBalance();
+                wallet = new WalletComponent(startingBalance);
                 HytaleUtils.addComponent(store, player, WalletComponent.TYPE, wallet);
                 LOGGER.atInfo().log("Created new wallet for player: " + player.getUsername()
-                    + " with starting balance: " + STARTING_BALANCE);
+                    + " with starting balance: " + startingBalance);
             }
 
             return wallet;
@@ -256,21 +343,31 @@ public class EconomyManager {
     }
 
     /**
-     * Formats a currency amount for display.
+     * Formats a currency amount for display using the default currency.
      *
      * @param amount The amount to format
      * @return Formatted string
      */
     public String format(double amount) {
-        return String.format("%.2f coins", amount);
+        Currency defaultCurrency = getDefaultCurrency();
+        if (defaultCurrency != null) {
+            return defaultCurrency.formatAmount(amount);
+        }
+        return String.format("%.2f", amount);
     }
 
     /**
-     * Gets the starting balance for new players.
+     * Formats a currency amount for display using a specific currency.
      *
-     * @return The starting balance
+     * @param currencyId The currency ID
+     * @param amount The amount to format
+     * @return Formatted string
      */
-    public double getStartingBalance() {
-        return STARTING_BALANCE;
+    public String format(String currencyId, double amount) {
+        Currency currency = getCurrency(currencyId);
+        if (currency != null) {
+            return currency.formatAmount(amount);
+        }
+        return String.format("%.2f", amount);
     }
 }

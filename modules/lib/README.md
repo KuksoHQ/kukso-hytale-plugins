@@ -137,11 +137,11 @@ player.sendMessage(msg);
 A complete economy system ready to integrate into your mods.
 
 ```java
+import com.kukso.hy.lib.service.ServiceManager;
 import com.kukso.hy.lib.economy.Economy;
-import com.kukso.hy.lib.economy.EconomyManager;
-import com.kukso.hy.lib.economy.Transaction;
+import com.kukso.hy.lib.economy.EconomyResponse;
 
-EconomyManager economy = new EconomyManager();
+Economy economy = ServiceManager.getEconomy();
 
 // Check balance
 double balance = economy.getBalance(player);
@@ -151,15 +151,12 @@ economy.deposit(player, 100.0);
 economy.withdraw(player, 50.0);
 
 // Transfer between players
-Transaction transaction = economy.transfer(sender, receiver, 250.0);
-if (transaction.isSuccessful()) {
-    sender.sendMessage("&aTransfer complete!");
+EconomyResponse response = economy.transfer(sender, receiver, 250.0);
+if (response.isSuccess()) {
+    sender.sendMessage(ColorMan.translate("&aTransfer complete!"));
 } else {
-    sender.sendMessage("&c" + transaction.getFailureReason());
+    sender.sendMessage(ColorMan.translate("&c" + response.getErrorMessage()));
 }
-
-// Transaction logging
-economy.getTransactionHistory(player, 10); // Last 10 transactions
 ```
 
 **Features:**
@@ -170,6 +167,73 @@ economy.getTransactionHistory(player, 10); // Last 10 transactions
 - Vault-like API for cross-mod compatibility
 - Balance top leaderboards
 - Offline player support
+
+---
+
+## Lightweight Architecture
+
+KuksoLib uses a **lazy activation** pattern for its modules. This means:
+
+- **Economy, Permission, and Chat modules are dormant by default**
+- Modules only activate when a plugin registers to use that service
+- No database connections, event listeners, or ECS components are loaded until needed
+- Servers that don't need all features have zero overhead from unused modules
+
+### How It Works
+
+When your plugin calls `ServiceManager.registerEconomy(...)`, KuksoLib:
+1. Activates the Economy module
+2. Initializes database connections
+3. Registers ECS components for currency tracking
+4. Sets up event listeners for player join/quit
+
+If no plugin ever registers an economy provider, none of this happens.
+
+### Currencies Defined by Plugins
+
+Currencies are NOT defined in KuksoLib's config. Instead, economy plugins register their currencies programmatically:
+
+```java
+// In your economy plugin
+public class MyEconomyPlugin extends JavaPlugin implements Economy {
+    @Override
+    public void start() {
+        // Register currencies
+        CurrencyManager.register(new Currency(
+            "gold", "Gold", "Gold", "Gold", "G", "{amount}{symbol}", 0, 100.0, "myeconomy:gold"
+        ));
+        CurrencyManager.register(new Currency(
+            "gems", "Gems", "Gem", "Gems", "💎", "{amount} {symbol}", 0, 0.0, "myeconomy:gems"
+        ));
+        CurrencyManager.setDefaultCurrency("gold");
+
+        // Register as provider - this activates the economy module
+        ServiceManager.registerEconomy(this, this, ServicePriority.NORMAL);
+    }
+}
+```
+
+### Example
+
+```java
+// This plugin only uses Economy - Permission and Chat modules stay dormant
+public class MyEconomyPlugin extends JavaPlugin {
+    @Override
+    public void start() {
+        ServiceManager.registerEconomy(this, new MyEconomy(), ServicePriority.NORMAL);
+        // Only Economy module is now active
+    }
+}
+```
+
+### Benefits
+
+| Benefit | Description |
+|---------|-------------|
+| Zero overhead | Unused modules consume no resources |
+| Faster startup | Only load what you need |
+| Lower memory | No unnecessary objects created |
+| Cleaner logs | No "module loaded" for unused features |
 
 ---
 
