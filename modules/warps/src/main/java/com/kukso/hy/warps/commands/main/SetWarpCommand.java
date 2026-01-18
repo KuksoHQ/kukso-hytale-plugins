@@ -1,4 +1,4 @@
-package com.kukso.hy.warps.commands;
+package com.kukso.hy.warps.commands.main;
 
 import com.kukso.hy.warps.WarpManager;
 import com.hypixel.hytale.server.core.command.system.basecommands.AbstractPlayerCommand;
