@@ -1,8 +1,8 @@
 {
-    "Group": "com.kukso.hy.lib",
-    "Name": "KuksoLib",
-    "Version": "1.1.0",
-    "Description": "A core library for the Hytale Mods ecosystem.",
+    "Group": "com.kukso.hy.econ",
+    "Name": "KuksoEcon",
+    "Version": "1.0.0",
+    "Description": "Hytale Economy plugin using Entity Component System and SQL.",
     "Authors": [
         {
             "Name": "DevBD1"
@@ -17,6 +17,6 @@
         
     },
     "DisabledByDefault": false,
-    "Main": "com.kukso.hy.lib.Main",
+    "Main": "com.kukso.hy.econ.Main",
     "IncludesAssetPack": true
 }
