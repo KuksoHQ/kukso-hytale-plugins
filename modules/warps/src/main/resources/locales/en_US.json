@@ -1,0 +1,11 @@
+{
+  "warps.prefix": "&6[Warps]&r ",
+  "warps.teleport.success": "Teleported to warp &e{warp}&r.",
+  "warps.teleport.error": "&cWarp &e{warp} &cnot found!",
+  "warps.set.success": "Warp &e{warp} &aset successfully.",
+  "warps.set.exists": "&cWarp &e{warp} &calready exists!",
+  "warps.delete.success": "Warp &e{warp} &adeleted.",
+  "warps.delete.error": "&cWarp &e{warp} &cnot found!",
+  "warps.list.header": "&6Available Warps:",
+  "warps.list.empty": "&cNo warps set."
+}
