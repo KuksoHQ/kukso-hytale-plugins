@@ -1,22 +1,20 @@
 {
-    "Group": "com.kukso.hy.econ",
-    "Name": "KuksoEcon",
-    "Version": "1.0.0",
-    "Description": "Hytale Economy plugin using Entity Component System and SQL.",
+    "Group": "${group}",
+    "Name": "${mod_name}",
+    "Version": "${version}",
+    "Description": "${mod_description}",
     "Authors": [
         {
             "Name": "DevBD1"
         }
     ],
-    "Website": "https://kukso.com",
-    "ServerVersion": "*",
+    "Website": "${website}",
+    "ServerVersion": "${server_version}",
     "Dependencies": {
-        
+        "com.kukso.hy.lib:KuksoHyLib": "*"
     },
-    "OptionalDependencies": {
-        
-    },
+    "OptionalDependencies": {},
     "DisabledByDefault": false,
-    "Main": "com.kukso.hy.econ.Main",
-    "IncludesAssetPack": true
+    "Main": "${entry_point}",
+    "IncludesAssetPack": "${includes_pack}"
 }

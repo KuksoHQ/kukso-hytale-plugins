@@ -43,8 +43,7 @@ javadoc {
     options.addStringOption('Xdoclint:-missing', '-quiet')
 }
 
-group = 'com.kukso.hy.econ'
-description = 'Hytale Economy plugin using Entity Component System and SQL.'
+description = mod_description
 
 def versionFile = file("version.txt")
 if (versionFile.exists()) {
@@ -74,27 +73,6 @@ if (!serverRunDir.exists()) {
     serverRunDir.mkdirs()
 }
 
-// Updates the manifest.json file with the latest properties defined in the
-// build.properties file. Currently we update the version and if packs are
-// included with the plugin.
-tasks.register('updatePluginManifest') {
-    def manifestFile = file('src/main/resources/manifest.json')
-    doLast {
-        if (!manifestFile.exists()) {
-            throw new GradleException("Could not find manifest.json at ${manifestFile.path}!")
-        }
-        def manifestJson = new groovy.json.JsonSlurper().parseText(manifestFile.text)
-        manifestJson.Version = version
-        manifestJson.IncludesAssetPack = includes_pack.toBoolean()
-        manifestFile.text = groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(manifestJson))
-    }
-}
-
-// Makes sure the plugin manifest is up to date.
-tasks.named('processResources') {
-    dependsOn 'updatePluginManifest'
-}
-
 def createServerRunArguments(String srcDir) {
     def programParameters = '--allow-op --disable-sentry --assets="' + "${hytaleHome}/install/$patchline/package/game/latest/Assets.zip" + '"'
     def modPaths = []
@@ -121,13 +99,57 @@ idea.project.settings.runConfigurations {
     }
 }
 
+// Creates a launch.json file for VSCode with the same configuration
+tasks.register('generateVSCodeLaunch') {
+    def vscodeDir = file("$projectDir/.vscode")
+    def launchFile = file("$vscodeDir/launch.json")
+    doLast {
+        if (!vscodeDir.exists()) {
+            vscodeDir.mkdirs()
+        }
+        def programParams = createServerRunArguments("\${workspaceFolder}")
+        def launchConfig = [
+                version: "0.2.0",
+                configurations: [
+                        [
+                                type: "java",
+                                name: "HytaleServer",
+                                request: "launch",
+                                mainClass: "com.hypixel.hytale.Main",
+                                args: programParams,
+                                cwd: "\${workspaceFolder}/run"
+                        ]
+                ]
+        ]
+        launchFile.text = groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(launchConfig))
+    }
+}
+
+// Makes sure the plugin manifest is up to date.
 processResources {
-    def props = [version: version]
+    def props = [
+            mod_description: mod_description,
+            website: website,
+            server_version: server_version,
+            entry_point: entry_point,
+            includes_pack: includes_pack,
+            mod_name: mod_name,
+            group: project.group,
+            version: project.version
+    ]
     inputs.properties props
     filteringCharset 'UTF-8'
     filesMatching('manifest.json') {
-        expand(version: project.version)
-        expand props
+        expand(props)
+    }
+
+    doLast {
+        fileTree(dir: outputs.files.asPath, include: 'manifest.json').each { file ->
+            def text = file.text
+            text = text.replace('"IncludesAssetPack": "true"', '"IncludesAssetPack": true')
+            text = text.replace('"IncludesAssetPack": "false"', '"IncludesAssetPack": false')
+            file.text = text
+        }
     }
 }
 
@@ -135,4 +157,8 @@ tasks.register("printJdk") {
     doLast {
         println "Running with: " + System.getProperty("java.version")
     }
+}
+
+jar {
+    archiveBaseName.set(mod_name)
 }
