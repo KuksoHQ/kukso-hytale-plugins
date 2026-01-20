@@ -11,7 +11,7 @@
   "Website": "${website}",
   "ServerVersion": "${server_version}",
   "Dependencies": {
-    "com.kukso.hy.lib": "1.1.0"
+    "com.kukso.hy.lib:KuksoHyLib": "*"
   },
   "OptionalDependencies": {},
   "DisabledByDefault": false,

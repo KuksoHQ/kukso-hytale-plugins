@@ -1,4 +1,4 @@
-package com.kukso.hy.warps.commands;
+package com.kukso.hy.warps.command;
 
 import com.hypixel.hytale.server.core.command.system.CommandContext;
 import com.hypixel.hytale.server.core.command.system.basecommands.CommandBase;

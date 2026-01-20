@@ -99,6 +99,32 @@ idea.project.settings.runConfigurations {
     }
 }
 
+// Creates a launch.json file for VSCode with the same configuration
+tasks.register('generateVSCodeLaunch') {
+    def vscodeDir = file("$projectDir/.vscode")
+    def launchFile = file("$vscodeDir/launch.json")
+    doLast {
+        if (!vscodeDir.exists()) {
+            vscodeDir.mkdirs()
+        }
+        def programParams = createServerRunArguments("\${workspaceFolder}")
+        def launchConfig = [
+                version: "0.2.0",
+                configurations: [
+                        [
+                                type: "java",
+                                name: "HytaleServer",
+                                request: "launch",
+                                mainClass: "com.hypixel.hytale.Main",
+                                args: programParams,
+                                cwd: "\${workspaceFolder}/run"
+                        ]
+                ]
+        ]
+        launchFile.text = groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(launchConfig))
+    }
+}
+
 // Makes sure the plugin manifest is up to date.
 processResources {
     def props = [
@@ -131,4 +157,8 @@ tasks.register("printJdk") {
     doLast {
         println "Running with: " + System.getProperty("java.version")
     }
+}
+
+jar {
+    archiveBaseName.set(mod_name)
 }

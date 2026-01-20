@@ -1,8 +1,6 @@
-[2026/01/14 21:27:15   INFO]        [CommandManager] MBD executed command: warps
-[2026/01/14 21:27:15   INFO]                [Hytale] 434673ff-be3b-4e06-afdb-d2e31518c540 - MBD at QuicConnectionAddress{connId=9777435b6a9f9d634189cf8e259d515e909c3b69} (/127.0.0.1:62306, streamId=0) left with reason: Crash - Could not find document ui/WarpList.ui for Custom UI Append command. Selector:
-[2026/01/14 21:27:15   INFO]                [Hytale] {Playing(null (null, streamId=0)), 434673ff-be3b-4e06-afdb-d2e31518c540, MBD} was closed.
-[2026/01/14 21:27:15   INFO]            [Universe|P] Removing player 'MBD' (434673ff-be3b-4e06-afdb-d2e31518c540)
-[2026/01/14 21:27:15   INFO]         [QUICTransport] Connection closed: QuicheQuicConnectionStats[recv=3771, sent=11736, lost=0, retrans=0, sentBytes=3184980, recvBytes=236935, lostBytes=0, streamRetransBytes=0, pathsCount=1]
-[2026/01/14 21:27:15   INFO]        [CommandManager] Console executed command: stop
-Shutting down!
-[2026/01/14 21:27:15   INFO]          [HytaleServer] Shutdown triggered!!!
+[2026/01/18 22:46:03   INFO]             [KuksoLib|P] Commands (6) registered for KuksoLib
+-=|Setup|99.0
+[2026/01/18 22:46:03   INFO]             [KuksoWarps] [KuksoWarps] KuksoLib detected. Using centralized LocaleMan.
+[2026/01/18 22:46:03   INFO]             [KuksoWarps] [KuksoWarps] Loaded locales: [en_US]
+[2026/01/18 22:46:15   INFO]  [CommandManager] MBD executed command: delwarp toprak
+[2026/01/18 22:46:22   INFO]  [CommandManager] MBD executed command: warp toprak
