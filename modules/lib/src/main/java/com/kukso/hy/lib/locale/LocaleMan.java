@@ -58,10 +58,11 @@ public final class LocaleMan {
      * Should be called from Main.setup().
      *
      * @param pluginInstance The plugin instance
+     * @param dataDirectory  The base directory for locale files
      */
-    public static void init(PluginBase pluginInstance) {
+    public static void init(PluginBase pluginInstance, Path dataDirectory) {
         plugin = pluginInstance;
-        localesPath = plugin.getDataDirectory().resolve(LOCALES_DIR);
+        localesPath = dataDirectory.resolve(LOCALES_DIR);
 
         // Extract default locale if not present
         extractDefaultLocales();

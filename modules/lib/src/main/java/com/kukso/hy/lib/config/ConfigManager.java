@@ -38,10 +38,11 @@ public final class ConfigManager {
      * Loads configuration from file or creates default if not exists.
      *
      * @param pluginInstance The plugin instance
+     * @param dataDirectory  The base directory for configuration files
      */
-    public static void init(JavaPlugin pluginInstance) {
+    public static void init(JavaPlugin pluginInstance, Path dataDirectory) {
         plugin = pluginInstance;
-        configPath = plugin.getDataDirectory().resolve(CONFIG_FILE_NAME);
+        configPath = dataDirectory.resolve(CONFIG_FILE_NAME);
 
         // Extract default config if it doesn't exist
         extractDefaultConfig();

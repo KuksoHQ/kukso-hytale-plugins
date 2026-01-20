@@ -11,6 +11,7 @@ import com.hypixel.hytale.server.core.plugin.JavaPlugin;
 import com.hypixel.hytale.server.core.plugin.JavaPluginInit;
 
 import javax.annotation.Nonnull;
+import java.nio.file.Path;
 
 public class Main extends JavaPlugin {
 
@@ -27,12 +28,14 @@ public class Main extends JavaPlugin {
     protected void setup() {
         LOGGER.atInfo().log("Setting up plugin " + this.getName());
 
+        Path dataDir = Path.of("mods/KuksoHyLib");
+
         // Initialize configuration (must be first)
-        ConfigManager.init(this);
+        ConfigManager.init(this, dataDir);
         LOGGER.atInfo().log("Configuration loaded");
 
         // Initialize localization
-        LocaleMan.init(this);
+        LocaleMan.init(this, dataDir);
 
         // Initialize Economy Manager (registers ComponentType)
         economyManager = new EconomyManager();
