@@ -1,6 +1,6 @@
 package com.kukso.hy.lib;
 
-import com.kukso.hy.lib.command.CmdRegistrar;
+import com.kukso.hy.lib.command.Commands;
 import com.kukso.hy.lib.config.ConfigManager;
 import com.kukso.hy.lib.economy.EconomyListener;
 import com.kukso.hy.lib.economy.EconomyManager;
@@ -44,7 +44,7 @@ public class Main extends JavaPlugin {
         LOGGER.atInfo().log("Economy Listener registered");
 
         // Register commands
-        CmdRegistrar.register(this);
+        Commands.register(this);
     }
 
     @Override
@@ -53,7 +53,7 @@ public class Main extends JavaPlugin {
     }
 
     @Override
-    public void shutdown() {
+    protected void shutdown() {
         // Unregister economy listener
         if (economyListener != null) {
             economyListener.unregister();

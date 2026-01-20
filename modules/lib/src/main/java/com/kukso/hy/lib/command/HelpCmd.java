@@ -1,41 +1,31 @@
-package com.kukso.hy.lib.command.sub;
+package com.kukso.hy.lib.command;
 
 import com.hypixel.hytale.protocol.GameMode;
-import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.command.system.CommandSender;
-import com.kukso.hy.lib.command.CmdInterface;
-import com.kukso.hy.lib.command.CmdManager;
 import com.kukso.hy.lib.util.ColorMan;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 /**
  * Help subcommand - displays available commands.
  */
-public class HelpCmd implements CmdInterface {
+class HelpCmd implements CommandInterface {
 
-    private static final String CMD_NAME = "help";
-    private final CmdManager manager;
+    private final TreeManager manager;
 
-    public HelpCmd(CmdManager manager) {
+    HelpCmd(TreeManager manager) {
         this.manager = manager;
     }
 
     @Override
     public String getName() {
-        return CMD_NAME;
+        return "help";
     }
 
     @Override
     public List<String> getAliases() {
         return List.of("?");
-    }
-
-    @Override
-    public List<String> getPermissions() {
-        return Collections.emptyList();
     }
 
     @Override
@@ -50,13 +40,12 @@ public class HelpCmd implements CmdInterface {
 
     @Override
     public boolean execute(CommandSender sender, String[] args) {
-        // Using ColorMan to translate color codes
         sender.sendMessage(ColorMan.translate("&e&l=== KuksoLib Help ==="));
 
         if (manager == null) return true;
 
-        Collection<CmdInterface> commands = manager.getCommands();
-        for (CmdInterface cmd : commands) {
+        Collection<CommandInterface> commands = manager.getCommands();
+        for (CommandInterface cmd : commands) {
             List<String> permissions = cmd.getPermissions();
             boolean hasPermission = permissions.isEmpty() ||
                     permissions.stream().anyMatch(sender::hasPermission);
@@ -66,10 +55,5 @@ public class HelpCmd implements CmdInterface {
             sender.sendMessage(ColorMan.translate("&e" + cmd.getUsage() + " &7- " + cmd.getDescription()));
         }
         return true;
-    }
-
-    @Override
-    public List<String> tabComplete(CommandSender sender, String[] args) {
-        return Collections.emptyList();
     }
 }

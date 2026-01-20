@@ -4,7 +4,7 @@ import com.hypixel.hytale.component.ComponentType;
 import com.hypixel.hytale.logger.HytaleLogger;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
-import com.kukso.hy.lib.util.HytaleUtils;
+import com.kukso.hy.lib.util.ECS;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -260,13 +260,13 @@ public final class CurrencyManager {
         for (Currency currency : currencies.values()) {
             ComponentType<EntityStore, CurrencyComponent> type = componentTypes.get(currency.id());
             if (type != null) {
-                CurrencyComponent existing = HytaleUtils.getComponent(store, player, type);
+                CurrencyComponent existing = ECS.getComponent(store, player, type);
                 if (existing == null) {
                     CurrencyComponent component = new CurrencyComponent(
                         currency.id(),
                         currency.startingBalance()
                     );
-                    HytaleUtils.addComponent(store, player, type, component);
+                    ECS.addComponent(store, player, type, component);
                     LOGGER.atFine().log("Initialized currency " + currency.id() +
                         " for player " + player.getUsername() +
                         " with balance " + currency.startingBalance());
@@ -288,7 +288,7 @@ public final class CurrencyManager {
         if (type == null) {
             return 0.0;
         }
-        CurrencyComponent component = HytaleUtils.getComponent(store, player, type);
+        CurrencyComponent component = ECS.getComponent(store, player, type);
         return component != null ? component.getBalance() : 0.0;
     }
 
@@ -322,7 +322,7 @@ public final class CurrencyManager {
             return false;
         }
 
-        CurrencyComponent component = HytaleUtils.getComponent(store, player, type);
+        CurrencyComponent component = ECS.getComponent(store, player, type);
         if (component == null) {
             // Create new component if it doesn't exist
             Currency currency = currencies.get(currencyId);
@@ -334,7 +334,7 @@ public final class CurrencyManager {
             component.setBalance(amount);
         }
 
-        HytaleUtils.addComponent(store, player, type, component);
+        ECS.addComponent(store, player, type, component);
         return true;
     }
 
@@ -358,14 +358,14 @@ public final class CurrencyManager {
             return false;
         }
 
-        CurrencyComponent component = HytaleUtils.getComponent(store, player, type);
+        CurrencyComponent component = ECS.getComponent(store, player, type);
         if (component == null) {
             return false;
         }
 
         boolean success = component.deposit(amount);
         if (success) {
-            HytaleUtils.addComponent(store, player, type, component);
+            ECS.addComponent(store, player, type, component);
         }
         return success;
     }
@@ -390,14 +390,14 @@ public final class CurrencyManager {
             return false;
         }
 
-        CurrencyComponent component = HytaleUtils.getComponent(store, player, type);
+        CurrencyComponent component = ECS.getComponent(store, player, type);
         if (component == null) {
             return false;
         }
 
         boolean success = component.withdraw(amount);
         if (success) {
-            HytaleUtils.addComponent(store, player, type, component);
+            ECS.addComponent(store, player, type, component);
         }
         return success;
     }

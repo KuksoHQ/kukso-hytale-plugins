@@ -274,7 +274,7 @@ public class Main extends JavaPlugin {
 ```java
 package com.kukso.hy.eco.command.sub;
 
-import com.kukso.hy.lib.command.CmdInterface;
+import com.kukso.hy.lib.command.tree.CmdInterface;
 import com.kukso.hy.lib.locale.LocaleMan;
 import com.kukso.hy.lib.service.ServiceManager;
 import com.kukso.hy.lib.economy.Economy;

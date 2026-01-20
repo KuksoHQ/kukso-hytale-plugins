@@ -1,22 +1,18 @@
 {
-    "Group": "com.kukso.hy.lib",
-    "Name": "KuksoLib",
-    "Version": "1.1.0",
-    "Description": "A core library for the Hytale Mods ecosystem.",
+    "Group": "${group}",
+    "Name": "${mod_name}",
+    "Version": "${version}",
+    "Description": "${mod_description}",
     "Authors": [
         {
             "Name": "DevBD1"
         }
     ],
-    "Website": "https://kukso.com",
-    "ServerVersion": "*",
-    "Dependencies": {
-        
-    },
-    "OptionalDependencies": {
-        
-    },
+    "Website": "${website}",
+    "ServerVersion": "${server_version}",
+    "Dependencies": {},
+    "OptionalDependencies": {},
     "DisabledByDefault": false,
-    "Main": "com.kukso.hy.lib.Main",
-    "IncludesAssetPack": true
+    "Main": "${entry_point}",
+    "IncludesAssetPack": "${includes_pack}"
 }

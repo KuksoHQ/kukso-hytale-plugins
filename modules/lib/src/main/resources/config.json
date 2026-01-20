@@ -1,16 +1,4 @@
 {
-  "database": {
-    "type": "sqlite",
-    "mysql": {
-      "host": "localhost",
-      "port": 3306,
-      "database": "kuksolib",
-      "username": "root",
-      "password": "",
-      "poolSize": 10,
-      "connectionTimeout": 30000
-    }
-  },
   "economy": {
     "enabled": true,
     "defaultCurrency": "coins",

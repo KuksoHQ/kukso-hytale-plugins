@@ -6,7 +6,7 @@ import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import com.kukso.hy.lib.config.ConfigManager;
 import com.kukso.hy.lib.config.KuksoConfig;
-import com.kukso.hy.lib.util.HytaleUtils;
+import com.kukso.hy.lib.util.ECS;
 
 import java.lang.reflect.Constructor;
 import java.util.Map;
@@ -178,13 +178,13 @@ public class EconomyManager {
 
         try {
             // Try to get existing wallet
-            WalletComponent wallet = HytaleUtils.getComponent(store, player, WalletComponent.TYPE);
+            WalletComponent wallet = ECS.getComponent(store, player, WalletComponent.TYPE);
 
             // Create new wallet with starting balance if it doesn't exist
             if (wallet == null) {
                 double startingBalance = getStartingBalance();
                 wallet = new WalletComponent(startingBalance);
-                HytaleUtils.addComponent(store, player, WalletComponent.TYPE, wallet);
+                ECS.addComponent(store, player, WalletComponent.TYPE, wallet);
                 LOGGER.atInfo().log("Created new wallet for player: " + player.getUsername()
                     + " with starting balance: " + startingBalance);
             }
@@ -335,7 +335,7 @@ public class EconomyManager {
         EntityStore store = getEntityStore();
         if (store != null && WalletComponent.TYPE != null) {
             try {
-                HytaleUtils.addComponent(store, player, WalletComponent.TYPE, wallet);
+                ECS.addComponent(store, player, WalletComponent.TYPE, wallet);
             } catch (Exception e) {
                 LOGGER.atSevere().log("Error updating wallet for " + player.getUsername() + ": " + e.getMessage());
             }

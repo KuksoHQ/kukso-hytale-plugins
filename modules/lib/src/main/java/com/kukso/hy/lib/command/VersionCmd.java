@@ -1,40 +1,31 @@
-package com.kukso.hy.lib.command.sub;
-
-import com.kukso.hy.lib.command.CmdInterface;
+package com.kukso.hy.lib.command;
 
 import com.hypixel.hytale.protocol.GameMode;
 import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.command.system.CommandSender;
 import com.hypixel.hytale.server.core.plugin.PluginBase;
 
-import java.util.Collections;
 import java.util.List;
 
 /**
  * Version subcommand - displays plugin version information.
  */
-public class VersionCmd implements CmdInterface {
+class VersionCmd implements CommandInterface {
 
-    private static final String CMD_NAME = "version";
     private final PluginBase plugin;
 
-    public VersionCmd(PluginBase plugin) {
+    VersionCmd(PluginBase plugin) {
         this.plugin = plugin;
     }
 
     @Override
     public String getName() {
-        return CMD_NAME;
+        return "version";
     }
 
     @Override
     public List<String> getAliases() {
         return List.of("ver", "v");
-    }
-
-    @Override
-    public List<String> getPermissions() {
-        return Collections.emptyList();
     }
 
     @Override
@@ -58,10 +49,5 @@ public class VersionCmd implements CmdInterface {
         sender.sendMessage(Message.raw("Java: " + System.getProperty("java.version")));
 
         return true;
-    }
-
-    @Override
-    public List<String> tabComplete(CommandSender sender, String[] args) {
-        return Collections.emptyList();
     }
 }

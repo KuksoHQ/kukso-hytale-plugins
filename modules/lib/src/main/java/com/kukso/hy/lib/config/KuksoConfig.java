@@ -12,16 +12,11 @@ import java.util.Map;
  */
 public class KuksoConfig {
 
-    private DatabaseConfig database = new DatabaseConfig();
     private EconomyConfig economy = new EconomyConfig();
     private PermissionConfig permission = new PermissionConfig();
     private LocaleConfig locale = new LocaleConfig();
     private ChatConfig chat = new ChatConfig();
     private LoggingConfig logging = new LoggingConfig();
-
-    public DatabaseConfig getDatabase() {
-        return database;
-    }
 
     public EconomyConfig getEconomy() {
         return economy;
@@ -41,75 +36,6 @@ public class KuksoConfig {
 
     public LoggingConfig getLogging() {
         return logging;
-    }
-
-    /**
-     * Database configuration.
-     */
-    public static class DatabaseConfig {
-        private String type = "sqlite";
-        private MysqlConfig mysql = new MysqlConfig();
-
-        public String getType() {
-            return type;
-        }
-
-        public MysqlConfig getMysql() {
-            return mysql;
-        }
-
-        public boolean isSqlite() {
-            return "sqlite".equalsIgnoreCase(type);
-        }
-
-        public boolean isMysql() {
-            return "mysql".equalsIgnoreCase(type);
-        }
-    }
-
-    /**
-     * MySQL-specific configuration.
-     */
-    public static class MysqlConfig {
-        private String host = "localhost";
-        private int port = 3306;
-        private String database = "kuksolib";
-        private String username = "root";
-        private String password = "";
-        private int poolSize = 10;
-        private long connectionTimeout = 30000;
-
-        public String getHost() {
-            return host;
-        }
-
-        public int getPort() {
-            return port;
-        }
-
-        public String getDatabase() {
-            return database;
-        }
-
-        public String getUsername() {
-            return username;
-        }
-
-        public String getPassword() {
-            return password;
-        }
-
-        public int getPoolSize() {
-            return poolSize;
-        }
-
-        public long getConnectionTimeout() {
-            return connectionTimeout;
-        }
-
-        public String getJdbcUrl() {
-            return "jdbc:mysql://" + host + ":" + port + "/" + database;
-        }
     }
 
     /**

@@ -2,15 +2,45 @@ package com.kukso.hy.lib.util;
 
 import com.hypixel.hytale.component.Component;
 import com.hypixel.hytale.component.ComponentType;
+import com.hypixel.hytale.server.core.command.system.CommandContext;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 
 import java.lang.reflect.Method;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Utility class for handling Hytale's Entity Component System (ECS).
  * Uses reflection to work around potential API changes and generic type issues.
  */
-public class HytaleUtils {
+public class ECS {
+
+    // --- ARGUMENT HANDLING ---
+    public static List<String> getArgs(CommandContext ctx) {
+        try {
+            // Try method: getArguments()
+            try {
+                Method m = ctx.getClass().getMethod("getArguments");
+                return (List<String>) m.invoke(ctx);
+            } catch (NoSuchMethodException ignored) {}
+
+            // Try method: getArgs()
+            try {
+                Method m = ctx.getClass().getMethod("getArgs");
+                return (List<String>) m.invoke(ctx);
+            } catch (NoSuchMethodException ignored) {}
+
+            // Try method: getParams()
+            try {
+                Method m = ctx.getClass().getMethod("getParams");
+                return (List<String>) m.invoke(ctx);
+            } catch (NoSuchMethodException ignored) {}
+
+        } catch (Exception e) {
+            System.err.println("Error fetching arguments: " + e.getMessage());
+        }
+        return Collections.emptyList();
+    }
 
     /**
      * Retrieves a component from an entity in the EntityStore.

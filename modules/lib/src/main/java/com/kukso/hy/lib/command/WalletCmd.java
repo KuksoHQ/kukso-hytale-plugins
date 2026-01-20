@@ -1,32 +1,24 @@
-package com.kukso.hy.lib.command.sub;
+package com.kukso.hy.lib.command;
 
 import com.hypixel.hytale.server.core.command.system.CommandSender;
 import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
-import com.kukso.hy.lib.command.CmdInterface;
 import com.kukso.hy.lib.economy.Currency;
 import com.kukso.hy.lib.economy.CurrencyManager;
 import com.kukso.hy.lib.economy.Economy;
-import com.kukso.hy.lib.economy.KuksoEconomy;
 import com.kukso.hy.lib.service.ServiceManager;
 import com.kukso.hy.lib.util.ColorMan;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Admin command for querying player wallet information.
- * Shows both ECS component data and database backend data for debugging.
- *
- * <p>Usage: /kuksolib wallet &lt;player&gt;</p>
- *
- * <p>This helps admins verify that ECS components (in-memory, fast access)
- * are in sync with the database backend (persistent storage).</p>
+ * Shows ECS component data for debugging.
  */
-public class WalletCmd implements CmdInterface {
+class WalletCmd implements CommandInterface {
 
     @Override
     public String getName() {
@@ -74,7 +66,6 @@ public class WalletCmd implements CmdInterface {
         sender.sendMessage(ColorMan.translate("&e&l=== Wallet Info: " + playerRef.getUsername() + " ==="));
         sender.sendMessage(ColorMan.translate("&7UUID: &f" + playerRef.getUuid()));
 
-        // Get economy provider
         Economy economy = ServiceManager.getProvider(Economy.class);
         if (economy == null) {
             sender.sendMessage(ColorMan.translate("&cNo economy provider registered"));
@@ -83,7 +74,6 @@ public class WalletCmd implements CmdInterface {
 
         sender.sendMessage(ColorMan.translate("&7Provider: &f" + economy.getName()));
 
-        // Show registered currencies
         if (!CurrencyManager.hasCurrencies()) {
             sender.sendMessage(ColorMan.translate("&cNo currencies registered"));
             return true;
@@ -91,7 +81,6 @@ public class WalletCmd implements CmdInterface {
 
         sender.sendMessage(ColorMan.translate("&e&lBalances:"));
 
-        // Get EntityStore if available
         EntityStore entityStore = null;
         try {
             entityStore = target.getWorld().getEntityStore();
@@ -99,46 +88,26 @@ public class WalletCmd implements CmdInterface {
             // EntityStore might not be accessible
         }
 
-        // Show balances for each currency
         for (String currencyId : CurrencyManager.getCurrencyIds()) {
             Currency currency = CurrencyManager.getCurrency(currencyId);
             if (currency == null) continue;
 
-            // Get ECS balance
-            double ecsBalance = 0.0;
-            String ecsStatus = "&c[N/A]";
+            String balanceStatus = "&c[N/A]";
             if (entityStore != null) {
                 try {
-                    ecsBalance = CurrencyManager.getBalance(playerRef, currencyId, entityStore);
-                    ecsStatus = "&a[ECS: " + currency.formatAmount(ecsBalance) + "]";
+                    double balance = CurrencyManager.getBalance(playerRef, currencyId, entityStore);
+                    balanceStatus = "&a" + currency.formatAmount(balance);
                 } catch (Exception e) {
-                    ecsStatus = "&c[ECS Error]";
-                }
-            }
-
-            // Get DB balance (if KuksoEconomy)
-            String dbStatus = "&7[DB: N/A]";
-            if (economy instanceof KuksoEconomy kuksoEcon) {
-                try {
-                    double dbBalance = economy.getBalance(playerRef.getUuid(), currencyId);
-                    dbStatus = "&b[DB: " + currency.formatAmount(dbBalance) + "]";
-
-                    // Check for sync issues
-                    if (entityStore != null && Math.abs(ecsBalance - dbBalance) > 0.01) {
-                        dbStatus += " &c(OUT OF SYNC!)";
-                    }
-                } catch (Exception e) {
-                    dbStatus = "&c[DB Error]";
+                    balanceStatus = "&c[Error]";
                 }
             }
 
             String defaultMarker = currencyId.equals(CurrencyManager.getDefaultCurrencyId()) ? " &6(default)" : "";
             sender.sendMessage(ColorMan.translate(
-                "  &f" + currency.displayName() + defaultMarker + ": " + ecsStatus + " " + dbStatus
+                "  &f" + currency.displayName() + defaultMarker + ": " + balanceStatus
             ));
         }
 
-        // Show account status
         sender.sendMessage(ColorMan.translate("&e&lAccount Status:"));
         boolean hasAccount = economy.hasAccount(playerRef);
         sender.sendMessage(ColorMan.translate("  &7Has Account: " + (hasAccount ? "&aYes" : "&cNo")));
@@ -146,23 +115,16 @@ public class WalletCmd implements CmdInterface {
         return true;
     }
 
-    /**
-     * Resolves a player name to a Player entity.
-     */
     @SuppressWarnings("removal")
     private Player resolvePlayer(CommandSender sender, String name) {
-        // First try exact match
         if (sender instanceof Player senderPlayer) {
             for (Player p : senderPlayer.getWorld().getPlayers()) {
-                @SuppressWarnings("removal")
                 String playerName = p.getPlayerRef().getUsername();
                 if (playerName.equalsIgnoreCase(name)) {
                     return p;
                 }
             }
-            // Then try substring match
             for (Player p : senderPlayer.getWorld().getPlayers()) {
-                @SuppressWarnings("removal")
                 String playerName = p.getPlayerRef().getUsername();
                 if (playerName.toLowerCase().contains(name.toLowerCase())) {
                     return p;
@@ -172,13 +134,13 @@ public class WalletCmd implements CmdInterface {
         return null;
     }
 
+    @SuppressWarnings("removal")
     @Override
     public List<String> tabComplete(CommandSender sender, String[] args) {
         if (args.length == 1 && sender instanceof Player player) {
             List<String> suggestions = new ArrayList<>();
             String partial = args[0].toLowerCase();
             for (Player p : player.getWorld().getPlayers()) {
-                @SuppressWarnings("removal")
                 String name = p.getPlayerRef().getUsername();
                 if (name.toLowerCase().startsWith(partial)) {
                     suggestions.add(name);

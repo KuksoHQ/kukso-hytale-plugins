@@ -17,7 +17,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * <ul>
  *   <li>Economy, Permission, and Chat modules are dormant by default</li>
  *   <li>Modules only activate when a plugin registers to use that service</li>
- *   <li>No database connections, event listeners, or ECS components are loaded until needed</li>
+ *   <li>No event listeners or ECS components are loaded until needed</li>
  *   <li>Servers that don't need all features have zero overhead from unused modules</li>
  * </ul>
  *
@@ -241,7 +241,7 @@ public final class ServiceManager {
 
     /**
      * Sets a callback to run when the Economy module is first activated.
-     * This allows lazy initialization of database connections, ECS components, etc.
+     * This allows lazy initialization of ECS components, etc.
      *
      * @param callback The callback to run on activation
      */

@@ -7,32 +7,45 @@ import com.hypixel.hytale.server.core.command.system.CommandSender;
 import com.hypixel.hytale.server.core.command.system.basecommands.CommandBase;
 
 import java.util.*;
-import java.util.logging.Level;
 
 /**
- * Manages subcommand execution and routing for the /kuksolib command.
+ * Manages subcommand execution and routing for parent-child command structures.
+ * For example: /myplugin help, /myplugin reload, etc.
+ *
+ * <p>This class is package-private. Use {@link CommandRegistrar#tree} to create instances.</p>
  */
-public class CmdManager extends CommandBase {
+class TreeManager extends CommandBase {
 
-    private final Map<String, CmdInterface> commands = new HashMap<>();
+    private final Map<String, CommandInterface> commands = new HashMap<>();
     private final Map<String, String> aliasToCommand = new HashMap<>();
+    private final String adminPermission;
 
-    public CmdManager() {
-        super("kuksolib", "KuksoLib main command");
-        addAliases("klib");
+    /**
+     * Creates a new TreeManager.
+     *
+     * @param name            The parent command name (e.g., "myplugin")
+     * @param description     The command description
+     * @param adminPermission The admin permission node for OP-only subcommands
+     * @param aliases         Optional aliases for the parent command
+     */
+    TreeManager(String name, String description, String adminPermission, String... aliases) {
+        super(name, description);
+        this.adminPermission = adminPermission;
+
+        if (aliases != null && aliases.length > 0) {
+            addAliases(aliases);
+        }
 
         // Allow extra arguments for subcommands
         setAllowsExtraArguments(true);
-
-        // Note: Tab completion for dynamic subcommands is not currently supported
-        // due to limitations in Hytale's command API for commands using setAllowsExtraArguments
     }
 
     /**
      * Registers a subcommand with the manager.
+     *
      * @param cmd The subcommand to register
      */
-    public void register(CmdInterface cmd) {
+    public void register(CommandInterface cmd) {
         String name = cmd.getName().toLowerCase();
         commands.put(name, cmd);
 
@@ -48,9 +61,10 @@ public class CmdManager extends CommandBase {
 
     /**
      * Gets all registered commands.
+     *
      * @return Collection of registered commands
      */
-    public Collection<CmdInterface> getCommands() {
+    public Collection<CommandInterface> getCommands() {
         return commands.values();
     }
 
@@ -65,8 +79,8 @@ public class CmdManager extends CommandBase {
 
         if (args.length == 0) {
             // No subcommand provided - show usage
-            context.sendMessage(Message.raw("Use /kuksolib <subcommand>").color("#AAAAAA"));
-            context.sendMessage(Message.raw("Type /kuksolib help for available commands.").italic(true));
+            context.sendMessage(Message.raw("Use /" + getName() + " <subcommand>").color("#AAAAAA"));
+            context.sendMessage(Message.raw("Type /" + getName() + " help for available commands.").italic(true));
             return;
         }
 
@@ -77,7 +91,7 @@ public class CmdManager extends CommandBase {
             subCmdName = aliasToCommand.get(subCmdName);
         }
 
-        CmdInterface sub = commands.get(subCmdName);
+        CommandInterface sub = commands.get(subCmdName);
         if (sub == null) {
             context.sendMessage(Message.raw("Unknown subcommand: " + args[0]).color("#FF5555"));
             return;
@@ -102,16 +116,13 @@ public class CmdManager extends CommandBase {
 
     /**
      * Checks if the sender has the required permission group.
-     * @param sender The command sender
-     * @param cmd The command to check
-     * @return true if sender has permission group access
      */
-    private boolean hasPermissionGroup(CommandSender sender, CmdInterface cmd) {
+    private boolean hasPermissionGroup(CommandSender sender, CommandInterface cmd) {
         GameMode permissionGroup = cmd.getPermissionGroup();
 
-        // If permission group is null (default), require operator permission
+        // If permission group is null (default), require admin permission
         if (permissionGroup == null) {
-            return sender.hasPermission("kuksolib.admin") || sender.hasPermission("*");
+            return sender.hasPermission(adminPermission) || sender.hasPermission("*");
         }
 
         // If permission group is Adventure, allow all players
@@ -119,18 +130,18 @@ public class CmdManager extends CommandBase {
             return true;
         }
 
-        // For any other game mode, require operator permission (safe default)
-        return sender.hasPermission("kuksolib.admin") || sender.hasPermission("*");
+        // For any other game mode, require admin permission (safe default)
+        return sender.hasPermission(adminPermission) || sender.hasPermission("*");
     }
 
     /**
      * Checks if the sender has any of the required permissions.
-     * @param sender The command sender
-     * @param permissions List of permissions (any one grants access)
-     * @return true if sender has permission or no permissions required
      */
     private boolean hasAnyPermission(CommandSender sender, List<String> permissions) {
         if (permissions == null || permissions.isEmpty()) {
+            return true;
+        }
+        if (sender.hasPermission("*")) {
             return true;
         }
         for (String permission : permissions) {

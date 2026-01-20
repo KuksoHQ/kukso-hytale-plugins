@@ -1,30 +1,27 @@
-package com.kukso.hy.lib.command.sub;
+package com.kukso.hy.lib.command;
 
 import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.command.system.CommandSender;
 import com.hypixel.hytale.server.core.plugin.PluginBase;
-import com.kukso.hy.lib.command.CmdInterface;
 import com.kukso.hy.lib.locale.LocaleMan;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 
 /**
  * Reload subcommand - reloads the plugin configuration.
  */
-public class ReloadCmd implements CmdInterface {
+class ReloadCmd implements CommandInterface {
 
-    private static final String CMD_NAME = "reload";
     private final PluginBase plugin;
 
-    public ReloadCmd(PluginBase plugin) {
+    ReloadCmd(PluginBase plugin) {
         this.plugin = plugin;
     }
 
     @Override
     public String getName() {
-        return CMD_NAME;
+        return "reload";
     }
 
     @Override
@@ -55,10 +52,5 @@ public class ReloadCmd implements CmdInterface {
 
         plugin.getLogger().at(Level.INFO).log("Reloaded by " + sender.getDisplayName());
         return true;
-    }
-
-    @Override
-    public List<String> tabComplete(CommandSender sender, String[] args) {
-        return Collections.emptyList();
     }
 }

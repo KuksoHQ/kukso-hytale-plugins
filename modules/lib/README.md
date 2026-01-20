@@ -160,13 +160,10 @@ if (response.isSuccess()) {
 ```
 
 **Features:**
-- SQLite and MySQL storage backends
+- ECS-based runtime storage
 - Thread-safe operations
-- Transaction history and logging
 - Configurable currency formatting
 - Vault-like API for cross-mod compatibility
-- Balance top leaderboards
-- Offline player support
 
 ---
 
@@ -176,16 +173,15 @@ KuksoLib uses a **lazy activation** pattern for its modules. This means:
 
 - **Economy, Permission, and Chat modules are dormant by default**
 - Modules only activate when a plugin registers to use that service
-- No database connections, event listeners, or ECS components are loaded until needed
+- No event listeners or ECS components are loaded until needed
 - Servers that don't need all features have zero overhead from unused modules
 
 ### How It Works
 
 When your plugin calls `ServiceManager.registerEconomy(...)`, KuksoLib:
 1. Activates the Economy module
-2. Initializes database connections
-3. Registers ECS components for currency tracking
-4. Sets up event listeners for player join/quit
+2. Registers ECS components for currency tracking
+3. Sets up event listeners for player join/quit
 
 If no plugin ever registers an economy provider, none of this happens.
 

@@ -40,6 +40,23 @@
     }
   },
 
+  "warps": {
+    "prefix": "&6[Warps]&r",
+    "set_success": "Warp &e{warp} &aset successfully.",
+    "set_exists": "&cWarp &e{warp} &calready exists!",
+    "delete_success": "Warp &e{warp} &adeleted.",
+    "teleport_success": "Teleported to warp &e{warp}&r.",
+    "not_found": "&cWarp &e{warp} &cnot found!",
+    "list_header": "&6Available Warps:",
+    "list_entry": "&7/warp {warp} &f- {description}",
+    "list_empty": "&cNo warps set.",
+    "help_header": "&e&lWarp Commands:",
+    "help_set": "&7/warp set <name> <description> &f- Set a warp",
+    "help_delete": "&7/warp delete <name> &f- Delete a warp",
+    "help_teleport": "&7/warp <name> &f- Teleport to a warp",
+    "help_list": "&7/warp list &f- List all warps"
+  },
+
   "errors": {
     "no_permission": "&cYou do not have permission to use this command.",
     "player_only": "&cThis command can only be used by players.",

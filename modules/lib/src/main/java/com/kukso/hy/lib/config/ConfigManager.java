@@ -157,15 +157,6 @@ public final class ConfigManager {
     }
 
     /**
-     * Gets the database configuration.
-     *
-     * @return Database configuration
-     */
-    public static KuksoConfig.DatabaseConfig getDatabase() {
-        return get().getDatabase();
-    }
-
-    /**
      * Gets the economy configuration.
      *
      * @return Economy configuration
