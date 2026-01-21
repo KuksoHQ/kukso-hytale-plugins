@@ -1,16 +1,13 @@
 package com.kukso.hy.warps;
 
-import com.hypixel.hytale.server.core.util.Config;
 import java.util.Collection;
 import java.util.UUID;
 
 public class WarpManager {
-    private final Config<KuksoWarpsConfig> config;
     private final java.util.Map<UUID, Long> cooldowns = new java.util.HashMap<>();
     private final java.util.Set<UUID> warmingUp = new java.util.HashSet<>();
 
-    public WarpManager(Config<KuksoWarpsConfig> config) {
-        this.config = config;
+    public WarpManager() {
     }
 
     public boolean isWarmingUp(UUID uuid) {
@@ -26,11 +23,11 @@ public class WarpManager {
     }
 
     public int getWarmup() {
-        return this.config.get().warmup;
+        return WarpConfigManager.get().warmup;
     }
 
     public int getCooldown() {
-        return this.config.get().cooldown;
+        return WarpConfigManager.get().cooldown;
     }
 
     public long getRemainingCooldown(UUID uuid) {
@@ -46,20 +43,20 @@ public class WarpManager {
 
     public void createWarp(String name, UUID worldUuid, double x, double y, double z, float yaw, float pitch) {
         WarpModel warp = new WarpModel(name, worldUuid, x, y, z, yaw, pitch);
-        this.config.get().warps.put(name, warp);
-        this.config.save();
+        WarpConfigManager.get().warps.put(name, warp);
+        WarpConfigManager.save();
     }
 
     public void deleteWarp(String name) {
-        this.config.get().warps.remove(name);
-        this.config.save();
+        WarpConfigManager.get().warps.remove(name);
+        WarpConfigManager.save();
     }
 
     public WarpModel getWarp(String name) {
-        return this.config.get().warps.get(name);
+        return WarpConfigManager.get().warps.get(name);
     }
 
     public Collection<String> getWarpNames() {
-        return this.config.get().warps.keySet();
+        return WarpConfigManager.get().warps.keySet();
     }
 }

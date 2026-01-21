@@ -1,41 +1,41 @@
 package com.kukso.hy.warps;
 
-import com.kukso.hy.lib.locale.LocaleMan;
 import com.kukso.hy.warps.command.DelWarpCommand;
 import com.kukso.hy.warps.command.ListWarpsCommand;
 import com.kukso.hy.warps.command.SetWarpCommand;
 import com.kukso.hy.warps.command.WarpCommand;
+import com.kukso.hy.lib.locale.LocaleMan;
 
 import com.hypixel.hytale.logger.HytaleLogger;
 import com.hypixel.hytale.server.core.plugin.JavaPlugin;
 import com.hypixel.hytale.server.core.plugin.JavaPluginInit;
-import com.hypixel.hytale.server.core.util.Config;
 
 import javax.annotation.Nonnull;
+import java.nio.file.Path;
 
 public class Main extends JavaPlugin {
 
     private static final HytaleLogger LOGGER = HytaleLogger.get("KuksoWarps");
-    private final Config<KuksoWarpsConfig> config;
+    private static final Path DATA_DIR = Path.of("mods", "KuksoHyWarps");
 
     public Main(@Nonnull JavaPluginInit init) {
         super(init);
-        this.config = this.withConfig("KuksoWarps", KuksoWarpsConfig.CODEC);
     }
 
     @Override
     protected void setup() {
-        super.setup();
+        // Initialize config at custom path
+        WarpConfigManager.init(this, DATA_DIR);
 
         // Check if KuksoLib is available
         if (!isKuksoLibAvailable()) {
             LOGGER.atSevere().log("[KuksoWarps] KuksoLib is not available! Some features may not work.");
         } else {
-            LOGGER.atInfo().log("[KuksoWarps] KuksoLib detected. Using centralized LocaleMan.");
+            LOGGER.atInfo().log("[KuksoWarps] KuksoLib detected. Using centralized LocaleMan and ColorMan.");
             LOGGER.atInfo().log("[KuksoWarps] Loaded locales: %s", LocaleMan.getLoadedLocales());
         }
 
-        WarpManager warpManager = new WarpManager(this.config);
+        WarpManager warpManager = new WarpManager();
 
         // Register commands
         this.getCommandRegistry().registerCommand(new WarpCommand(warpManager));
