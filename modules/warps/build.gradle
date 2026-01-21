@@ -64,7 +64,7 @@ repositories {
 
 dependencies {
     implementation(files("$hytaleHome/install/$patchline/package/game/$game_build/Server/HytaleServer.jar"))
-    implementation 'com.kukso.hy.lib:kukso-hy-lib:1.1.2'
+    implementation('com.kukso.hy.lib:kukso-hy-lib:1.1.2')
 }
 
 // Create the working directory to run the server if it does not already exist.
