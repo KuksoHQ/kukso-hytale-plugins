@@ -4,7 +4,7 @@ import com.kukso.hy.warps.command.DelWarpCommand;
 import com.kukso.hy.warps.command.ListWarpsCommand;
 import com.kukso.hy.warps.command.SetWarpCommand;
 import com.kukso.hy.warps.command.WarpCommand;
-import com.kukso.hy.lib.locale.LocaleMan;
+//import com.kukso.hy.lib.locale.LocaleMan;
 
 import com.hypixel.hytale.logger.HytaleLogger;
 import com.hypixel.hytale.server.core.plugin.JavaPlugin;
@@ -32,7 +32,7 @@ public class Main extends JavaPlugin {
             LOGGER.atSevere().log("[KuksoWarps] KuksoLib is not available! Some features may not work.");
         } else {
             LOGGER.atInfo().log("[KuksoWarps] KuksoLib detected. Using centralized LocaleMan and ColorMan.");
-            LOGGER.atInfo().log("[KuksoWarps] Loaded locales: %s", LocaleMan.getLoadedLocales());
+            //LOGGER.atInfo().log("[KuksoWarps] Loaded locales: %s", LocaleMan.getLoadedLocales());
         }
 
         WarpManager warpManager = new WarpManager();

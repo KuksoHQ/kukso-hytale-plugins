@@ -1,6 +1,7 @@
 package com.kukso.hy.warps.command;
 
-import com.kukso.hy.lib.locale.LocaleMan;
+//import com.kukso.hy.lib.locale.LocaleMan;
+import com.hypixel.hytale.server.core.Message;
 import com.kukso.hy.warps.WarpManager;
 import com.hypixel.hytale.server.core.command.system.basecommands.AbstractPlayerCommand;
 import com.hypixel.hytale.server.core.command.system.CommandContext;
@@ -38,6 +39,7 @@ public class SetWarpCommand extends AbstractPlayerCommand {
         Vector3f rot = player.getHeadRotation();
 
         warpManager.createWarp(name, player.getWorldUuid(), pos.x, pos.y, pos.z, rot.getYaw(), rot.getPitch());
-        player.sendMessage(LocaleMan.get(player, "warps.set_success", Map.of("warp", name)));
+        //player.sendMessage(LocaleMan.get(player, "warps.set_success", Map.of("warp", name)));
+        player.sendMessage(Message.raw("Warp " + name + " set successfully."));
     }
 }

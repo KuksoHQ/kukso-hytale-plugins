@@ -10,10 +10,10 @@
   ],
   "Website": "${website}",
   "ServerVersion": "${server_version}",
-  "Dependencies": {
+  "Dependencies": {},
+  "OptionalDependencies": {
     "com.kukso.hy.lib:KuksoHyLib": "*"
   },
-  "OptionalDependencies": {},
   "DisabledByDefault": false,
   "Main": "${entry_point}",
   "IncludesAssetPack": "${includes_pack}"
