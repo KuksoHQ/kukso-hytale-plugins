@@ -18,6 +18,7 @@ public final class ConfigMigration {
     private static final HytaleLogger LOGGER = HytaleLogger.forEnclosingClass();
 
     private static final Path OLD_CONFIG_PATH = Path.of("mods", "com.kukso.hy_KuksoWarps", "KuksoWarps.json");
+    private static final Path OLD_CONFIG_PATH2 = Path.of("mods", "com.kukso.hy_KuksoWarps", "KuksoWarps.json.bak");
     private static final Path OLD_CONFIG_DIR = Path.of("mods", "com.kukso.hy_KuksoWarps");
 
     private ConfigMigration() {}
@@ -49,11 +50,12 @@ public final class ConfigMigration {
             LOGGER.atInfo().log("Migrated config from %s to %s", OLD_CONFIG_PATH, newConfigPath);
 
             // Delete old config file
-        //    Files.delete(OLD_CONFIG_PATH);
+            Files.delete(OLD_CONFIG_PATH);
+            Files.delete(OLD_CONFIG_PATH2);
             LOGGER.atInfo().log("Deleted old config file: %s", OLD_CONFIG_PATH);
 
             // Try to delete old directory if empty
-        //    deleteDirectoryIfEmpty(OLD_CONFIG_DIR);
+            deleteDirectoryIfEmpty(OLD_CONFIG_DIR);
 
             return true;
         } catch (IOException e) {
