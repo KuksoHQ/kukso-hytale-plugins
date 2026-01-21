@@ -7,7 +7,7 @@ import com.hypixel.hytale.server.core.command.system.basecommands.AbstractPlayer
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
-import com.kukso.hy.lib.command.CmdInterface;
+import com.kukso.hy.lib.command.CommandInterface;
 
 import java.util.Arrays;
 
@@ -17,9 +17,9 @@ import java.util.Arrays;
  * commands as standalone player commands (e.g., /delwarp instead of /warps del).
  */
 public class PlayerCmdWrapper extends AbstractPlayerCommand {
-    private final CmdInterface cmd;
+    private final CommandInterface cmd;
 
-    public PlayerCmdWrapper(CmdInterface cmd) {
+    public PlayerCmdWrapper(CommandInterface cmd) {
         super(cmd.getName(), cmd.getDescription());
         this.cmd = cmd;
         setAllowsExtraArguments(true);

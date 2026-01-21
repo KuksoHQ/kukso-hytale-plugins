@@ -2,14 +2,14 @@ package com.kukso.hy.warps.command;
 
 import com.hypixel.hytale.server.core.command.system.CommandContext;
 import com.hypixel.hytale.server.core.command.system.basecommands.CommandBase;
-import com.kukso.hy.lib.command.CmdInterface;
+import com.kukso.hy.lib.command.CommandInterface;
 
 import java.util.Arrays;
 
 public class CmdWrapper extends CommandBase {
-    private final CmdInterface cmd;
+    private final CommandInterface cmd;
 
-    public CmdWrapper(CmdInterface cmd) {
+    public CmdWrapper(CommandInterface cmd) {
         super(cmd.getName(), cmd.getDescription());
         this.cmd = cmd;
         setAllowsExtraArguments(true);
