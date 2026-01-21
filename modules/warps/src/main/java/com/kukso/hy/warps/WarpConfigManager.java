@@ -88,6 +88,12 @@ public final class WarpConfigManager {
         try {
             Files.createDirectories(configPath.getParent());
 
+            // Create backup before saving if file exists
+            if (Files.exists(configPath)) {
+                Path backupPath = configPath.resolveSibling(CONFIG_FILE_NAME + ".bak");
+                Files.copy(configPath, backupPath, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            }
+
             try (Writer writer = Files.newBufferedWriter(configPath, StandardCharsets.UTF_8)) {
                 GSON.toJson(config, writer);
             }

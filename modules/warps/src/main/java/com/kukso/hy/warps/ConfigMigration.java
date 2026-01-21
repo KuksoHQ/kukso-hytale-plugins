@@ -49,10 +49,10 @@ public final class ConfigMigration {
             Files.copy(OLD_CONFIG_PATH, newConfigPath, StandardCopyOption.COPY_ATTRIBUTES);
             LOGGER.atInfo().log("Migrated config from %s to %s", OLD_CONFIG_PATH, newConfigPath);
 
-            // Delete old config file
-            Files.delete(OLD_CONFIG_PATH);
-            Files.delete(OLD_CONFIG_PATH2);
-            LOGGER.atInfo().log("Deleted old config file: %s", OLD_CONFIG_PATH);
+            // Rename old config file to .bak for backup
+            Path backupPath = OLD_CONFIG_PATH.resolveSibling(OLD_CONFIG_PATH.getFileName() + ".bak");
+            Files.move(OLD_CONFIG_PATH, backupPath, StandardCopyOption.REPLACE_EXISTING);
+            LOGGER.atInfo().log("Renamed old config file to: %s", backupPath);
 
             // Try to delete old directory if empty
             deleteDirectoryIfEmpty(OLD_CONFIG_DIR);
