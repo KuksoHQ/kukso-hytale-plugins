@@ -1,39 +1,7 @@
 {
-  "economy": {
-    "enabled": true,
-    "defaultCurrency": "coins",
-    "currencies": [
-      {
-        "id": "coins",
-        "displayName": "Coins",
-        "nameSingular": "Coin",
-        "namePlural": "Coins",
-        "symbol": "$",
-        "format": "{symbol}{amount}",
-        "decimalPlaces": 2,
-        "startingBalance": 100.0,
-        "componentId": "kuksolib:coins"
-      }
-    ],
-    "transactionLogging": true
-  },
-  "permission": {
-    "enabled": true,
-    "defaultProvider": "default"
-  },
   "locale": {
     "enabled": true,
     "defaultLocale": "en_US",
     "useClientLocale": true
-  },
-  "chat": {
-    "enabled": true,
-    "defaultPrefix": "",
-    "defaultSuffix": ""
-  },
-  "logging": {
-    "enabled": true,
-    "transactionLogFile": "transactions.log",
-    "debugMode": false
   }
 }

@@ -11,11 +11,11 @@ import java.util.logging.Level;
 /**
  * Reload subcommand - reloads the plugin configuration.
  */
-class ReloadCmd implements CommandInterface {
+class CmdSubReload implements CommandInterface {
 
     private final PluginBase plugin;
 
-    ReloadCmd(PluginBase plugin) {
+    CmdSubReload(PluginBase plugin) {
         this.plugin = plugin;
     }
 

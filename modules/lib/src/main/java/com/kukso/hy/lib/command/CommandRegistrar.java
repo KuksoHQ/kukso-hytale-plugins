@@ -45,7 +45,7 @@ public final class CommandRegistrar {
         Objects.requireNonNull(cmd, "Command cannot be null");
 
         String adminPermission = cmd.getName() + ".admin";
-        StandaloneBase base = new StandaloneBase(cmd, adminPermission);
+        CommandSingleBase base = new CommandSingleBase(cmd, adminPermission);
         plugin.getCommandRegistry().registerCommand(base);
 
         HytaleLogger logger = plugin.getLogger();
@@ -66,7 +66,7 @@ public final class CommandRegistrar {
         Objects.requireNonNull(cmd, "Command cannot be null");
         Objects.requireNonNull(adminPermission, "Admin permission cannot be null");
 
-        StandaloneBase base = new StandaloneBase(cmd, adminPermission);
+        CommandSingleBase base = new CommandSingleBase(cmd, adminPermission);
         plugin.getCommandRegistry().registerCommand(base);
 
         HytaleLogger logger = plugin.getLogger();
@@ -108,8 +108,8 @@ public final class CommandRegistrar {
      * @param description The command description
      * @return The TreeManager to register subcommands with
      */
-    public static TreeManager tree(@Nonnull PluginBase plugin, @Nonnull String name,
-                                   @Nonnull String description) {
+    public static CommandTreeBase tree(@Nonnull PluginBase plugin, @Nonnull String name,
+                                       @Nonnull String description) {
         return tree(plugin, name, description, name + ".admin", new String[0]);
     }
 
@@ -123,8 +123,8 @@ public final class CommandRegistrar {
      * @param aliases     Aliases for the parent command
      * @return The TreeManager to register subcommands with
      */
-    public static TreeManager treeWithAliases(@Nonnull PluginBase plugin, @Nonnull String name,
-                                              @Nonnull String description, @Nonnull String... aliases) {
+    public static CommandTreeBase treeWithAliases(@Nonnull PluginBase plugin, @Nonnull String name,
+                                                  @Nonnull String description, @Nonnull String... aliases) {
         return tree(plugin, name, description, name + ".admin", aliases);
     }
 
@@ -138,15 +138,15 @@ public final class CommandRegistrar {
      * @param aliases         Aliases for the parent command
      * @return The TreeManager to register subcommands with
      */
-    public static TreeManager tree(@Nonnull PluginBase plugin, @Nonnull String name,
-                                   @Nonnull String description, @Nonnull String adminPermission,
-                                   @Nonnull String... aliases) {
+    public static CommandTreeBase tree(@Nonnull PluginBase plugin, @Nonnull String name,
+                                       @Nonnull String description, @Nonnull String adminPermission,
+                                       @Nonnull String... aliases) {
         Objects.requireNonNull(plugin, "Plugin cannot be null");
         Objects.requireNonNull(name, "Name cannot be null");
         Objects.requireNonNull(description, "Description cannot be null");
         Objects.requireNonNull(adminPermission, "Admin permission cannot be null");
 
-        TreeManager manager = new TreeManager(name, description, adminPermission, aliases);
+        CommandTreeBase manager = new CommandTreeBase(name, description, adminPermission, aliases);
         plugin.getCommandRegistry().registerCommand(manager);
 
         HytaleLogger logger = plugin.getLogger();

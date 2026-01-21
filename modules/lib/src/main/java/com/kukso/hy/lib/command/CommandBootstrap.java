@@ -9,9 +9,9 @@ import com.hypixel.hytale.server.core.plugin.PluginBase;
  *
  * <p>Called from Main.start() to initialize KuksoLib's commands.</p>
  */
-public final class Commands {
+public final class CommandBootstrap {
 
-    private Commands() {
+    private CommandBootstrap() {
         // Utility class
     }
 
@@ -24,15 +24,14 @@ public final class Commands {
         HytaleLogger logger = plugin.getLogger();
 
         // Register tree command: /kuksolib <subcommand>
-        TreeManager mgr = CommandRegistrar.treeWithAliases(plugin, "kuksolib", "KuksoLib main command", "klib");
-        mgr.register(new HelpCmd(mgr));
-        mgr.register(new ReloadCmd(plugin));
-        mgr.register(new VersionCmd(plugin));
-        mgr.register(new TestCmd());
-        mgr.register(new WalletCmd());
+        CommandTreeBase mgr = CommandRegistrar.treeWithAliases(plugin, "kuksolib", "KuksoLib main command", "klib");
+        mgr.register(new CmdSubHelp(mgr));
+        mgr.register(new CmdSubReload(plugin));
+        mgr.register(new CmdSubVersion(plugin));
+        mgr.register(new CmdSubTest());
 
         // Register standalone commands
-        CommandRegistrar.standalone(plugin, new PlayerInfoCmd());
+        CommandRegistrar.standalone(plugin, new CmdSinglePlayerInfo());
 
         logger.atInfo().log("KuksoLib commands registered");
     }

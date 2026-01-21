@@ -14,7 +14,7 @@ import java.util.*;
  *
  * <p>This class is package-private. Use {@link CommandRegistrar#tree} to create instances.</p>
  */
-class TreeManager extends CommandBase {
+class CommandTreeBase extends CommandBase {
 
     private final Map<String, CommandInterface> commands = new HashMap<>();
     private final Map<String, String> aliasToCommand = new HashMap<>();
@@ -28,7 +28,7 @@ class TreeManager extends CommandBase {
      * @param adminPermission The admin permission node for OP-only subcommands
      * @param aliases         Optional aliases for the parent command
      */
-    TreeManager(String name, String description, String adminPermission, String... aliases) {
+    CommandTreeBase(String name, String description, String adminPermission, String... aliases) {
         super(name, description);
         this.adminPermission = adminPermission;
 

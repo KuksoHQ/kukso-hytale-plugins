@@ -13,7 +13,7 @@ import java.util.Map;
 /**
  * Test subcommand - provides testing utilities for KuksoLib features.
  */
-class TestCmd implements CommandInterface {
+class CmdSubTest implements CommandInterface {
 
     @Override
     public String getName() {
@@ -32,7 +32,7 @@ class TestCmd implements CommandInterface {
 
     @Override
     public GameMode getPermissionGroup() {
-        return GameMode.Adventure; // Allow all players to test
+        return GameMode.Adventure;
     }
 
     @Override

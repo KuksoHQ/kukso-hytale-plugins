@@ -11,10 +11,8 @@ import java.util.regex.Pattern;
 
 /**
  * Utility class for translating legacy color codes to Hytale's Message format.
- * Supports Minecraft-style color codes (&a, &b, etc.), hex colors (&#RRGGBB),
+ * Supports Minecraft-style color codes, hex colors,
  * and multiple color changes within a single string.
- *
- * <p>Example: "&4Hel&clo &bWo&1rld!" will render with each segment in its respective color.</p>
  */
 public class ColorMan {
 
@@ -46,7 +44,7 @@ public class ColorMan {
 
     /**
      * Translates a string with color codes to a Hytale Message.
-     * Supports legacy codes (&a, &b, etc.), format codes (&l for bold, &o for italic), and hex codes (&#RRGGBB).
+     * Supports legacy codes, format codes (bold, italic), and hex codes.
      * Note: Only bold and italic are supported by Hytale's Message API.
      *
      * @param text The text with color codes

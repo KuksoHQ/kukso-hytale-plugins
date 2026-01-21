@@ -10,11 +10,11 @@ import java.util.List;
 /**
  * Help subcommand - displays available commands.
  */
-class HelpCmd implements CommandInterface {
+class CmdSubHelp implements CommandInterface {
 
-    private final TreeManager manager;
+    private final CommandTreeBase manager;
 
-    HelpCmd(TreeManager manager) {
+    CmdSubHelp(CommandTreeBase manager) {
         this.manager = manager;
     }
 

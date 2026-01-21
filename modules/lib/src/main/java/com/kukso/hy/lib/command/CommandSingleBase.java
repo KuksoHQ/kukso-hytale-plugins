@@ -15,7 +15,7 @@ import java.util.List;
  *
  * <p>This class is package-private. Use {@link CommandRegistrar#standalone} to register commands.</p>
  */
-class StandaloneBase extends CommandBase {
+class CommandSingleBase extends CommandBase {
 
     private final CommandInterface cmd;
     private final String adminPermission;
@@ -26,7 +26,7 @@ class StandaloneBase extends CommandBase {
      * @param cmd             The command implementation to wrap
      * @param adminPermission The admin permission node for OP-only access
      */
-    StandaloneBase(CommandInterface cmd, String adminPermission) {
+    CommandSingleBase(CommandInterface cmd, String adminPermission) {
         super(cmd.getName(), cmd.getDescription());
         this.cmd = cmd;
         this.adminPermission = adminPermission;

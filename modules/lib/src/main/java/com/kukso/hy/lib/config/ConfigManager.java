@@ -158,15 +158,6 @@ public final class ConfigManager {
     }
 
     /**
-     * Gets the economy configuration.
-     *
-     * @return Economy configuration
-     */
-    public static KuksoConfig.EconomyConfig getEconomy() {
-        return get().getEconomy();
-    }
-
-    /**
      * Gets the permission configuration.
      *
      * @return Permission configuration
@@ -200,15 +191,6 @@ public final class ConfigManager {
      */
     public static KuksoConfig.LoggingConfig getLogging() {
         return get().getLogging();
-    }
-
-    /**
-     * Checks if the economy module is enabled.
-     *
-     * @return true if economy is enabled
-     */
-    public static boolean isEconomyEnabled() {
-        return get().getEconomy().isEnabled();
     }
 
     /**

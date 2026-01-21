@@ -13,7 +13,7 @@ import java.util.List;
 /**
  * Example standalone command that displays player information.
  */
-class PlayerInfoCmd implements CommandInterface {
+class CmdSinglePlayerInfo implements CommandInterface {
 
     @Override
     public String getName() {

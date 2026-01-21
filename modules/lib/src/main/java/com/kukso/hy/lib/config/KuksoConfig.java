@@ -1,26 +1,15 @@
 package com.kukso.hy.lib.config;
 
-import com.kukso.hy.lib.economy.Currency;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
 /**
  * Root configuration class for KuksoLib.
  * Contains all module configurations.
  */
 public class KuksoConfig {
 
-    private EconomyConfig economy = new EconomyConfig();
     private PermissionConfig permission = new PermissionConfig();
     private LocaleConfig locale = new LocaleConfig();
     private ChatConfig chat = new ChatConfig();
     private LoggingConfig logging = new LoggingConfig();
-
-    public EconomyConfig getEconomy() {
-        return economy;
-    }
 
     public PermissionConfig getPermission() {
         return permission;
@@ -36,115 +25,6 @@ public class KuksoConfig {
 
     public LoggingConfig getLogging() {
         return logging;
-    }
-
-    /**
-     * Economy module configuration.
-     */
-    public static class EconomyConfig {
-        private boolean enabled = true;
-        private String defaultCurrency = "coins";
-        private List<CurrencyConfig> currencies = new ArrayList<>();
-        private boolean transactionLogging = true;
-
-        public boolean isEnabled() {
-            return enabled;
-        }
-
-        public String getDefaultCurrency() {
-            return defaultCurrency;
-        }
-
-        public List<CurrencyConfig> getCurrencies() {
-            return currencies;
-        }
-
-        public boolean isTransactionLogging() {
-            return transactionLogging;
-        }
-
-        /**
-         * Converts configured currencies to Currency records.
-         *
-         * @return List of Currency records
-         */
-        public List<Currency> toCurrencyRecords() {
-            List<Currency> result = new ArrayList<>();
-            for (CurrencyConfig cc : currencies) {
-                result.add(cc.toCurrency());
-            }
-            return result;
-        }
-    }
-
-    /**
-     * Single currency configuration.
-     */
-    public static class CurrencyConfig {
-        private String id;
-        private String displayName;
-        private String nameSingular;
-        private String namePlural;
-        private String symbol = "$";
-        private String format = "{symbol}{amount}";
-        private int decimalPlaces = 2;
-        private double startingBalance = 0.0;
-        private String componentId;
-
-        public String getId() {
-            return id;
-        }
-
-        public String getDisplayName() {
-            return displayName != null ? displayName : id;
-        }
-
-        public String getNameSingular() {
-            return nameSingular != null ? nameSingular : getDisplayName();
-        }
-
-        public String getNamePlural() {
-            return namePlural != null ? namePlural : getNameSingular();
-        }
-
-        public String getSymbol() {
-            return symbol;
-        }
-
-        public String getFormat() {
-            return format;
-        }
-
-        public int getDecimalPlaces() {
-            return decimalPlaces;
-        }
-
-        public double getStartingBalance() {
-            return startingBalance;
-        }
-
-        public String getComponentId() {
-            return componentId != null ? componentId : "kuksolib:" + id;
-        }
-
-        /**
-         * Converts this config to a Currency record.
-         *
-         * @return Currency record
-         */
-        public Currency toCurrency() {
-            return new Currency(
-                id,
-                getDisplayName(),
-                getNameSingular(),
-                getNamePlural(),
-                symbol,
-                format,
-                decimalPlaces,
-                startingBalance,
-                getComponentId()
-            );
-        }
     }
 
     /**
@@ -227,26 +107,11 @@ public class KuksoConfig {
     }
 
     /**
-     * Creates a default configuration with a single "coins" currency.
+     * Creates a default configuration.
      *
      * @return Default KuksoConfig
      */
     public static KuksoConfig createDefault() {
-        KuksoConfig config = new KuksoConfig();
-
-        // Add default "coins" currency
-        CurrencyConfig coins = new CurrencyConfig();
-        coins.id = "coins";
-        coins.displayName = "Coins";
-        coins.nameSingular = "Coin";
-        coins.namePlural = "Coins";
-        coins.symbol = "$";
-        coins.format = "{symbol}{amount}";
-        coins.decimalPlaces = 2;
-        coins.startingBalance = 100.0;
-        coins.componentId = "kuksolib:coins";
-        config.economy.currencies.add(coins);
-
-        return config;
+        return new KuksoConfig();
     }
 }

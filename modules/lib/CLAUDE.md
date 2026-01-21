@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**kukso-hy-lib** is a core library for the Hytale Mods ecosystem, providing utilities for GUI building, localization, chat colorization, and economy systems. Built by developers with 5+ years of Minecraft plugin experience.
+**kukso-hy-lib** is a core library for the Hytale Mods ecosystem, providing utilities for GUI building, localization, chat colorization, and ECS helpers. Built by developers with 5+ years of Minecraft plugin experience.
 
 The project is a Hytale server plugin (mod) that depends on the HytaleServer.jar API and follows the Hytale plugin manifest structure.
 
@@ -60,41 +60,50 @@ The main plugin class is `com.kukso.hy.lib.Main` (extends `JavaPlugin`):
 
 ### Command System Architecture
 
-The library uses a hierarchical subcommand system with clear separation of concerns:
+The library supports two command types: **tree commands** (parent with subcommands) and **standalone commands**.
 
 **Core Components:**
-1. **CmdInterface** - Defines the contract for all subcommands
+
+1. **CommandInterface** (`com.kukso.hy.lib.command.CommandInterface`)
+   - Contract for all command types (both standalone and subcommands)
    - Handles name, aliases, permissions, description, usage
    - Provides `execute()` and `tabComplete()` methods
-   - Permission checking (both group and specific permissions) is done by CmdManager before calling execute()
+   - Permission checking is done by the base classes before calling `execute()`
    - Supports `getPermissionGroup()` to control OP requirements:
      - Return `null` (default) for OP-only commands
      - Return `GameMode.Adventure` to allow all players
 
-2. **CmdManager** - Central command dispatcher (extends CommandBase)
-   - Registers with Hytale as `/kuksolib` (aliases: `/klib`, `/kl`)
-   - Routes subcommands: `/kuksolib <subcommand> [args...]`
+2. **CommandRegistrar** - Static utility for registering commands
+   - `standalone(plugin, cmd)` - Register a standalone command (e.g., `/warps`)
+   - `standaloneAll(plugin, cmd1, cmd2, ...)` - Register multiple standalone commands
+   - `tree(plugin, name, description)` - Create a tree command manager
+   - `treeWithAliases(plugin, name, description, aliases...)` - Tree command with aliases
+
+3. **CommandTreeBase** (package-private) - Manages subcommand routing
+   - Routes subcommands: `/parent <subcommand> [args...]`
    - Manages alias-to-command mapping
    - Handles permission checking before delegating to subcommands
-   - **Important:** Uses `setAllowsExtraArguments(true)` to accept subcommand arguments
-   - **Limitation:** Tab completion is not currently supported due to Hytale API limitations with dynamic subcommands
+   - Uses `setAllowsExtraArguments(true)` to accept subcommand arguments
 
-3. **CmdRegistrar** - Static registration utility
-   - Called from `Main.start()` to register all commands
-   - Creates CmdManager instance and registers all subcommands
-   - Registers the manager with plugin's command registry
+4. **CommandSingleBase** (package-private) - Wraps standalone commands
+   - Wraps a `CommandInterface` for direct registration with Hytale
+   - Handles permission checking and argument parsing
 
-**Subcommands location:** `com.kukso.hy.lib.command.sub.*`
-- Each subcommand implements `CmdInterface`
-- Examples: HelpCmd, ReloadCmd, VersionCmd, TestCmd
+5. **CommandBootstrap** - Internal KuksoLib command registration
+   - Called from `Main.start()` to register all KuksoLib commands
+   - Sets up the `/kuksolib` tree command and standalone commands
+
+**Command Locations:** `com.kukso.hy.lib.command`
+- Subcommands use `CmdSub*` prefix (e.g., `CmdSubHelp`, `CmdSubReload`)
+- Standalone commands use `CmdSingle*` prefix (e.g., `CmdSinglePlayerInfo`)
 
 ### Adding New Commands
 
-To add a new subcommand:
+**Option 1: Add a subcommand under `/kuksolib`**
 
-1. Create a class in `com.kukso.hy.lib.command.sub` implementing `CmdInterface`:
+Create a class implementing `CommandInterface` with `CmdSub` prefix:
 ```java
-public class MyCmd implements CmdInterface {
+class CmdSubMyCommand implements CommandInterface {
     @Override
     public String getName() { return "mycommand"; }
 
@@ -102,13 +111,8 @@ public class MyCmd implements CmdInterface {
     public List<String> getAliases() { return List.of("mc"); }
 
     @Override
-    public List<String> getPermissions() { return List.of("kuksolib.mycommand"); }
-
-    @Override
     public GameMode getPermissionGroup() {
-        // Return GameMode.Adventure for player-accessible commands
-        // Return null (or omit this method) for OP-only commands
-        return GameMode.Adventure;
+        return GameMode.Adventure; // or null for OP-only
     }
 
     @Override
@@ -116,34 +120,72 @@ public class MyCmd implements CmdInterface {
 
     @Override
     public boolean execute(CommandSender sender, String[] args) {
-        // Implementation - permissions already checked by CmdManager
+        // Implementation - permissions already checked
         return true;
+    }
+}
+```
+
+Register in `CommandBootstrap.register()`:
+```java
+mgr.register(new CmdSubMyCommand());
+```
+
+**Option 2: Add a standalone command (e.g., `/mycommand`)**
+
+Create a class implementing `CommandInterface` with `CmdSingle` prefix:
+```java
+class CmdSingleMyCommand implements CommandInterface {
+    @Override
+    public String getName() { return "mycommand"; }
+
+    @Override
+    public List<String> getAliases() { return List.of("mc"); }
+
+    @Override
+    public GameMode getPermissionGroup() {
+        return GameMode.Adventure;
     }
 
     @Override
-    public List<String> tabComplete(CommandSender sender, String[] args) {
-        return Collections.emptyList();
+    public String getDescription() { return "Does something cool"; }
+
+    @Override
+    public String getUsage() { return "/mycommand [args]"; }
+
+    @Override
+    public boolean execute(CommandSender sender, String[] args) {
+        return true;
     }
 }
+```
+
+Register in `CommandBootstrap.register()`:
+```java
+CommandRegistrar.standalone(plugin, new CmdSingleMyCommand());
+```
+
+**Option 3: Create your own tree command (for other plugins)**
+
+```java
+// In your plugin's start() method:
+CommandTreeBase mgr = CommandRegistrar.treeWithAliases(plugin, "myplugin", "My plugin commands", "mp");
+mgr.register(new MyHelpCmd(mgr));
+mgr.register(new MyReloadCmd());
 ```
 
 **Permission System:**
 - Commands have two layers of permission checks:
   1. **Permission Group** (`getPermissionGroup()`): Controls base access level
-     - `null` (default) = Requires `kuksolib.admin` or `*` permission (admin/OP only)
+     - `null` (default) = Requires `{commandName}.admin` or `*` permission (admin/OP only)
      - `GameMode.Adventure` = All players can access
   2. **Specific Permissions** (`getPermissions()`): Fine-grained permission nodes
      - If empty, anyone with group access can use the command
      - If specified, sender must have at least one of the listed permissions
 - Examples:
-  - `HelpCmd`, `VersionCmd`, `TestCmd`: `GameMode.Adventure` + no specific permissions = all players
-  - `ReloadCmd`: `null` (requires `kuksolib.admin` or `*`) + `kuksolib.reload` permission
+  - `CmdSubHelp`, `CmdSubVersion`, `CmdSubTest`: `GameMode.Adventure` + no specific permissions = all players
+  - `CmdSubReload`: `null` (requires `kuksolib.admin` or `*`) + `kuksolib.reload` permission
 - The wildcard permission `*` grants access to all commands
-
-2. Register it in `CmdRegistrar.register()`:
-```java
-mgr.register(new MyCmd());
-```
 
 ### Hytale Plugin Structure
 
@@ -156,14 +198,19 @@ The plugin follows Hytale's manifest.json specification:
 
 ## Built-in Commands
 
-The library includes several built-in commands accessible via `/kuksolib` (aliases: `/klib`, `/kl`):
+### Tree Command: `/kuksolib` (aliases: `/klib`, `/kl`)
 
+Subcommands:
 - **help** (`?`) - Shows available commands
 - **version** (`ver`, `v`) - Displays plugin version and Java info
 - **reload** (`rl`) - Reloads the plugin configuration (OP-only)
 - **test** (`t`) - Testing utilities for KuksoLib features
   - `test chatcolor` - Demonstrates ColorMan's formatting capabilities
   - `test locale` - Demonstrates LocaleMan's localization system
+
+### Standalone Commands
+
+- **/playerinfo** (`/pinfo`, `/pi`) - Display information about a player
 
 **Example:** `/kuksolib test chatcolor` will display:
 - Rainbow-like text
@@ -307,7 +354,9 @@ The README describes several modules that are planned or in development:
 - **GUI Module** - Interactive in-game menus with fluent builder API
 - **Localization Module** - JSON-based multi-language support (IMPLEMENTED - see LocaleMan above)
 - **Chat Colorization** - Color codes, hex colors, and gradients (IMPLEMENTED - see ColorMan above)
-- **Economy Module** - Complete economy system with SQLite/MySQL backend
+- **ECS Utilities** - Entity Component System helpers (IMPLEMENTED - see ComponentMan)
+
+Economy functionality has been moved to a separate plugin. See [ECONOMY.md](./ECONOMY.md) for reference patterns.
 
 Check the actual source code structure when working on features.
 
@@ -322,7 +371,9 @@ Check the actual source code structure when working on features.
 ## Code Conventions
 
 - Package structure: `com.kukso.hy.lib.<module>.<feature>`
-- Commands use the CmdInterface pattern for consistency
+- Commands implement `CommandInterface` and follow naming conventions:
+  - Subcommands: `CmdSub*` prefix (e.g., `CmdSubHelp`)
+  - Standalone commands: `CmdSingle*` prefix (e.g., `CmdSinglePlayerInfo`)
 - Singleton pattern for main plugin instance (`Main.getInstance()`)
 - Use Hytale's logger: `plugin.getLogger().at(Level.INFO).log("message")` (Static instance in the Main class is LOGGER)
 - For colored messages, prefer `ColorMan.translate("&atext")` over manual `Message.raw().color()` calls

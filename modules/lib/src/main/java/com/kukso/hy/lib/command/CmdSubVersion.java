@@ -10,11 +10,11 @@ import java.util.List;
 /**
  * Version subcommand - displays plugin version information.
  */
-class VersionCmd implements CommandInterface {
+class CmdSubVersion implements CommandInterface {
 
     private final PluginBase plugin;
 
-    VersionCmd(PluginBase plugin) {
+    CmdSubVersion(PluginBase plugin) {
         this.plugin = plugin;
     }
 

@@ -1,9 +1,7 @@
 package com.kukso.hy.lib;
 
-import com.kukso.hy.lib.command.Commands;
+import com.kukso.hy.lib.command.CommandBootstrap;
 import com.kukso.hy.lib.config.ConfigManager;
-import com.kukso.hy.lib.economy.EconomyListener;
-import com.kukso.hy.lib.economy.EconomyManager;
 import com.kukso.hy.lib.locale.LocaleMan;
 
 import com.hypixel.hytale.logger.HytaleLogger;
@@ -16,8 +14,6 @@ import java.nio.file.Path;
 public class Main extends JavaPlugin {
 
     private static final HytaleLogger LOGGER = HytaleLogger.forEnclosingClass();
-    private EconomyManager economyManager;
-    private EconomyListener economyListener;
 
     public Main(@Nonnull JavaPluginInit init) {
         super(init);
@@ -37,17 +33,8 @@ public class Main extends JavaPlugin {
         // Initialize localization
         LocaleMan.init(this, dataDir);
 
-        // Initialize Economy Manager (registers ComponentType)
-        economyManager = new EconomyManager();
-        LOGGER.atInfo().log("Economy Manager initialized");
-
-        // Register Economy Listener
-        economyListener = new EconomyListener(this, economyManager);
-        economyListener.register();
-        LOGGER.atInfo().log("Economy Listener registered");
-
         // Register commands
-        Commands.register(this);
+        CommandBootstrap.register(this);
     }
 
     @Override
@@ -57,11 +44,6 @@ public class Main extends JavaPlugin {
 
     @Override
     protected void shutdown() {
-        // Unregister economy listener
-        if (economyListener != null) {
-            economyListener.unregister();
-        }
-
         // Shutdown localization
         LocaleMan.shutdown();
 
@@ -69,9 +51,5 @@ public class Main extends JavaPlugin {
         ConfigManager.shutdown();
 
         LOGGER.atInfo().log(this.getName() + " shutdown successfully!");
-    }
-
-    public EconomyManager getEconomyManager() {
-        return economyManager;
     }
 }

@@ -13,7 +13,7 @@ import java.util.List;
  * Utility class for handling Hytale's Entity Component System (ECS).
  * Uses reflection to work around potential API changes and generic type issues.
  */
-public class ECS {
+public class ComponentMan {
 
     // --- ARGUMENT HANDLING ---
     public static List<String> getArgs(CommandContext ctx) {
