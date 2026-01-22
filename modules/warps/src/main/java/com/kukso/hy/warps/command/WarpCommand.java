@@ -68,7 +68,7 @@ public class WarpCommand extends AbstractPlayerCommand {
             
             Vector3f rot = new Vector3f();
             rot.setYaw(warp.yaw);
-            rot.setPitch(warp.pitch);
+            rot.setPitch(0); // Fixed character position glitch by resetting pitch to 0
 
             Teleport teleport = new Teleport(world, new Vector3d(warp.x, warp.y, warp.z), rot);
             store.addComponent(ref, Teleport.getComponentType(), teleport);
