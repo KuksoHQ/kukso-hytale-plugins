@@ -15,6 +15,8 @@ import com.hypixel.hytale.math.vector.Vector3d;
 import com.hypixel.hytale.math.vector.Vector3f;
 import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.modules.entity.teleport.Teleport;
+
+import javax.annotation.Nonnull;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -24,18 +26,20 @@ public class WarpCommand extends AbstractPlayerCommand {
 
     public WarpCommand(WarpManager warpManager) {
         super("warp", "Teleport to a warp");
+        requirePermission("kukso.command.warp");
+
         this.warpManager = warpManager;
         this.nameArg = this.withRequiredArg("name", "Warp name", ArgTypes.STRING);
     }
 
     @Override
-    protected boolean canGeneratePermission() {
-        return false;
-    }
-
-    @Override
-    protected void execute(CommandContext ctx, Store<EntityStore> store, Ref<EntityStore> ref, PlayerRef player, World world) {
-        String name = ctx.get(nameArg);
+    protected void execute(
+            @Nonnull CommandContext context,
+            @Nonnull Store<EntityStore> store,
+            @Nonnull Ref<EntityStore> ref,
+            @Nonnull PlayerRef player,
+            @Nonnull World world) {
+        String name = context.get(nameArg);
         WarpModel warp = warpManager.getWarp(name);
         
         if (warp == null) {

@@ -13,6 +13,7 @@ import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import com.hypixel.hytale.server.core.command.system.arguments.types.ArgTypes;
 import com.hypixel.hytale.server.core.command.system.arguments.system.RequiredArg;
 
+import javax.annotation.Nonnull;
 import java.util.Map;
 
 public class DelWarpCommand extends AbstractPlayerCommand {
@@ -21,18 +22,20 @@ public class DelWarpCommand extends AbstractPlayerCommand {
 
     public DelWarpCommand(WarpManager warpManager) {
         super("delwarp", "Delete a warp");
+        requirePermission("kukso.command.delwarp");
+
         this.warpManager = warpManager;
         this.nameArg = this.withRequiredArg("name", "Warp name", ArgTypes.STRING);
     }
 
     @Override
-    protected boolean canGeneratePermission() {
-        return false;
-    }
-
-    @Override
-    protected void execute(CommandContext ctx, Store<EntityStore> store, Ref<EntityStore> ref, PlayerRef player, World world) {
-        String name = ctx.get(nameArg);
+    protected void execute(
+            @Nonnull CommandContext context,
+            @Nonnull Store<EntityStore> store,
+            @Nonnull Ref<EntityStore> ref,
+            @Nonnull PlayerRef player,
+            @Nonnull World world) {
+        String name = context.get(nameArg);
 
         if (warpManager.getWarp(name) == null) {
             //player.sendMessage(LocaleMan.get(player, "warps.not_found", Map.of("warp", name)));

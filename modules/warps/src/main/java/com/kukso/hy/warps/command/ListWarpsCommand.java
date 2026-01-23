@@ -10,21 +10,25 @@ import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import com.hypixel.hytale.server.core.Message;
 
+import javax.annotation.Nonnull;
+
 public class ListWarpsCommand extends AbstractPlayerCommand {
     private final WarpManager warpManager;
 
     public ListWarpsCommand(WarpManager warpManager) {
         super("warps", "List all warps");
+        requirePermission("kukso.command.warp");
+
         this.warpManager = warpManager;
     }
 
     @Override
-    protected boolean canGeneratePermission() {
-        return false;
-    }
-
-    @Override
-    protected void execute(CommandContext ctx, Store<EntityStore> store, Ref<EntityStore> ref, PlayerRef player, World world) {
+    protected void execute(
+            @Nonnull CommandContext context,
+            @Nonnull Store<EntityStore> store,
+            @Nonnull Ref<EntityStore> ref,
+            @Nonnull PlayerRef player,
+            @Nonnull World world) {
         if (warpManager.getWarpNames().isEmpty()) {
             player.sendMessage(Message.raw("No warps set."));
             return;

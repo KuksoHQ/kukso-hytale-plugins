@@ -2,6 +2,9 @@ package com.kukso.hy.warps.command;
 
 //import com.kukso.hy.lib.locale.LocaleMan;
 import com.hypixel.hytale.server.core.Message;
+import com.hypixel.hytale.server.core.modules.entitystats.EntityStatMap;
+import com.hypixel.hytale.server.core.modules.entitystats.EntityStatValue;
+import com.hypixel.hytale.server.core.permissions.HytalePermissions;
 import com.kukso.hy.warps.WarpManager;
 import com.hypixel.hytale.server.core.command.system.basecommands.AbstractPlayerCommand;
 import com.hypixel.hytale.server.core.command.system.CommandContext;
@@ -15,6 +18,8 @@ import com.hypixel.hytale.server.core.command.system.arguments.system.RequiredAr
 import com.hypixel.hytale.math.vector.Vector3d;
 import com.hypixel.hytale.math.vector.Vector3f;
 
+import javax.annotation.Nonnull;
+import javax.swing.text.html.parser.Entity;
 import java.util.Map;
 
 public class SetWarpCommand extends AbstractPlayerCommand {
@@ -23,18 +28,20 @@ public class SetWarpCommand extends AbstractPlayerCommand {
 
     public SetWarpCommand(WarpManager warpManager) {
         super("setwarp", "Set a new warp");
+        requirePermission("kukso.command.setwarp");
+
         this.warpManager = warpManager;
         this.nameArg = this.withRequiredArg("name", "Warp name", ArgTypes.STRING);
     }
 
     @Override
-    protected boolean canGeneratePermission() {
-        return false;
-    }
-
-    @Override
-    protected void execute(CommandContext ctx, Store<EntityStore> store, Ref<EntityStore> ref, PlayerRef player, World world) {
-        String name = ctx.get(nameArg);
+    protected void execute(
+            @Nonnull CommandContext context,
+            @Nonnull Store<EntityStore> store,
+            @Nonnull Ref<EntityStore> ref,
+            @Nonnull PlayerRef player,
+            @Nonnull World world) {
+        String name = context.get(nameArg);
         Vector3d pos = player.getTransform().getPosition();
         Vector3f rot = player.getHeadRotation();
 
