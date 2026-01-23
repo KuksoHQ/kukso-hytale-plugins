@@ -1,5 +1,6 @@
 package com.kukso.hy.warps.command;
 
+import com.hypixel.hytale.server.core.permissions.PermissionsModule;
 import com.kukso.hy.warps.WarpManager;
 import com.kukso.hy.warps.WarpModel;
 import com.hypixel.hytale.server.core.command.system.basecommands.AbstractPlayerCommand;
@@ -15,14 +16,18 @@ import com.hypixel.hytale.math.vector.Vector3d;
 import com.hypixel.hytale.math.vector.Vector3f;
 import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.modules.entity.teleport.Teleport;
+import com.kukso.hy.warps.util.PermissionUtil;
 
 import javax.annotation.Nonnull;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 public class WarpCommand extends AbstractPlayerCommand {
     private final WarpManager warpManager;
     private final RequiredArg<String> nameArg;
+    private static final String WARMUP_BYPASS_PERMISSION = "kukso.warps.bypass.warmup";
+    private static final String COOLDOWN_BYPASS_PERMISSION = "kukso.warps.bypass.cooldown";
 
     public WarpCommand(WarpManager warpManager) {
         super("warp", "Teleport to a warp");
@@ -39,6 +44,7 @@ public class WarpCommand extends AbstractPlayerCommand {
             @Nonnull Ref<EntityStore> ref,
             @Nonnull PlayerRef player,
             @Nonnull World world) {
+        UUID playerUuid = player.getUuid();
         String name = context.get(nameArg);
         WarpModel warp = warpManager.getWarp(name);
         
@@ -53,14 +59,15 @@ public class WarpCommand extends AbstractPlayerCommand {
         }
 
         // Cooldown Check
-        // if (!player.hasPermission("kukso.warps.bypass.cooldown")) {
+        boolean bypassCooldown = PermissionUtil.hasPermission(playerUuid, COOLDOWN_BYPASS_PERMISSION);
+        if (!bypassCooldown) {
             long remaining = warpManager.getRemainingCooldown(player.getUuid());
             if (remaining > 0) {
                 long seconds = (remaining / 1000) + 1;
                 player.sendMessage(Message.raw("You must wait " + seconds + " seconds before warping again."));
                 return;
             }
-        // }
+        }
 
         if (warpManager.isWarmingUp(player.getUuid())) {
             player.sendMessage(Message.raw("Teleportation already in progress!"));
@@ -86,7 +93,10 @@ public class WarpCommand extends AbstractPlayerCommand {
 
         // Warmup Check
         int warmup = warpManager.getWarmup();
-        if (warmup > 0 /* && !player.hasPermission("kukso.warps.bypass.warmup") */) {
+        //boolean bypassWarmup = PermissionsModule.get().hasPermission(playerUuid, WARMUP_BYPASS_PERMISSION);
+        boolean bypassWarmup = PermissionUtil.hasPermission(playerUuid, WARMUP_BYPASS_PERMISSION);
+        //if (warmup > 0 && !PermissionsModule.get().hasPermission(player.getUuid(), "kukso.warps.bypass.warmup")) {
+        if (warmup > 0 && !bypassWarmup) {
             warpManager.setWarmingUp(player.getUuid(), true);
             player.sendMessage(Message.raw("Teleporting in " + warmup + " seconds."));
             CompletableFuture.delayedExecutor(warmup, TimeUnit.SECONDS).execute(teleportTask);
