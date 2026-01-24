@@ -1,6 +1,7 @@
 package com.kukso.hy.warps.command;
 
-import com.hypixel.hytale.server.core.permissions.PermissionsModule;
+import com.hypixel.hytale.server.core.inventory.ItemStack;
+import com.hypixel.hytale.server.core.util.NotificationUtil;
 import com.kukso.hy.warps.WarpManager;
 import com.kukso.hy.warps.WarpModel;
 import com.hypixel.hytale.server.core.command.system.basecommands.AbstractPlayerCommand;
@@ -20,7 +21,9 @@ import com.kukso.hy.warps.util.PermissionUtil;
 
 import javax.annotation.Nonnull;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 public class WarpCommand extends AbstractPlayerCommand {
@@ -28,6 +31,8 @@ public class WarpCommand extends AbstractPlayerCommand {
     private final RequiredArg<String> nameArg;
     private static final String WARMUP_BYPASS_PERMISSION = "kukso.warps.bypass.warmup";
     private static final String COOLDOWN_BYPASS_PERMISSION = "kukso.warps.bypass.cooldown";
+    private static final double MOVEMENT_THRESHOLD = 0.5;
+    private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
     public WarpCommand(WarpManager warpManager) {
         super("warp", "Teleport to a warp");
@@ -74,34 +79,98 @@ public class WarpCommand extends AbstractPlayerCommand {
             return;
         }
 
-        Runnable teleportTask = () -> world.execute(() -> {
-            warpManager.setWarmingUp(player.getUuid(), false);
-            
-            Vector3f rot = new Vector3f();
-            rot.setYaw(warp.yaw);
-            rot.setPitch(0); // Fixed character position glitch by resetting pitch to 0
-
-            Teleport teleport = new Teleport(world, new Vector3d(warp.x, warp.y, warp.z), rot);
-            store.addComponent(ref, Teleport.getComponentType(), teleport);
-            player.sendMessage(Message.raw("Teleported to " + name));
-
-            // Set cooldown
-            // if (!player.hasPermission("kukso.warps.bypass.cooldown")) {
-                warpManager.setCooldown(player.getUuid());
-            // }
-        });
-
         // Warmup Check
         int warmup = warpManager.getWarmup();
-        //boolean bypassWarmup = PermissionsModule.get().hasPermission(playerUuid, WARMUP_BYPASS_PERMISSION);
         boolean bypassWarmup = PermissionUtil.hasPermission(playerUuid, WARMUP_BYPASS_PERMISSION);
-        //if (warmup > 0 && !PermissionsModule.get().hasPermission(player.getUuid(), "kukso.warps.bypass.warmup")) {
+
         if (warmup > 0 && !bypassWarmup) {
-            warpManager.setWarmingUp(player.getUuid(), true);
-            player.sendMessage(Message.raw("Teleporting in " + warmup + " seconds."));
-            CompletableFuture.delayedExecutor(warmup, TimeUnit.SECONDS).execute(teleportTask);
+            startWarmupCountdown(player, playerUuid, store, ref, world, warp, name, warmup);
         } else {
-            teleportTask.run();
+            executeTeleport(player, playerUuid, store, ref, world, warp, name);
         }
+    }
+
+    private void startWarmupCountdown(PlayerRef player, UUID playerUuid, Store<EntityStore> store,
+                                       Ref<EntityStore> ref, World world, WarpModel warp,
+                                       String warpName, int warmupSeconds) {
+        warpManager.setWarmingUp(playerUuid, true);
+        // Copy position values - getPosition() may return a mutable reference
+        Vector3d pos = player.getTransform().getPosition();
+        final double startX = pos.x;
+        final double startY = pos.y;
+        final double startZ = pos.z;
+        final int[] secondsRemaining = {warmupSeconds};
+
+        // Send initial notification only once (no clear method exists)
+        sendWarmupNotification(player, warmupSeconds);
+
+        ScheduledFuture<?>[] futureHolder = new ScheduledFuture<?>[1];
+        futureHolder[0] = scheduler.scheduleAtFixedRate(() -> {
+            world.execute(() -> {
+                // Guard: Check if warmup was already cancelled
+                if (!warpManager.isWarmingUp(playerUuid)) {
+                    futureHolder[0].cancel(true);
+                    return;
+                }
+
+                // Check if player moved
+                Vector3d currentPosition = player.getTransform().getPosition();
+                if (hasPlayerMoved(startX, startY, startZ, currentPosition)) {
+                    cancelWarmup(player, playerUuid, futureHolder[0]);
+                    return;
+                }
+
+                secondsRemaining[0]--;
+                if (secondsRemaining[0] <= 0) {
+                    futureHolder[0].cancel(true);
+                    // Double-check warmup state before teleporting
+                    if (warpManager.isWarmingUp(playerUuid)) {
+                        executeTeleport(player, playerUuid, store, ref, world, warp, warpName);
+                    }
+                }
+            });
+        }, 1, 1, TimeUnit.SECONDS);
+    }
+
+    private boolean hasPlayerMoved(double startX, double startY, double startZ, Vector3d current) {
+        double dx = current.x - startX;
+        double dy = current.y - startY;
+        double dz = current.z - startZ;
+        return Math.sqrt(dx * dx + dy * dy + dz * dz) > MOVEMENT_THRESHOLD;
+    }
+
+    private void cancelWarmup(PlayerRef player, UUID playerUuid, ScheduledFuture<?> future) {
+        warpManager.setWarmingUp(playerUuid, false);
+        future.cancel(true);
+        player.sendMessage(Message.raw("Teleportation cancelled - you moved!"));
+    }
+
+    private void executeTeleport(PlayerRef player, UUID playerUuid, Store<EntityStore> store,
+                                  Ref<EntityStore> ref, World world, WarpModel warp, String warpName) {
+        warpManager.setWarmingUp(playerUuid, false);
+
+        Vector3f rot = new Vector3f();
+        rot.setYaw(warp.yaw);
+        rot.setPitch(0);
+
+        Teleport teleport = new Teleport(world, new Vector3d(warp.x, warp.y, warp.z), rot);
+        store.addComponent(ref, Teleport.getComponentType(), teleport);
+        player.sendMessage(Message.raw("Teleported to " + warpName));
+
+        warpManager.setCooldown(playerUuid);
+    }
+
+    private static void sendWarmupNotification(PlayerRef player, int secondsLeft) {
+        var packetHandler = player.getPacketHandler();
+
+        var primaryMessage = Message.raw("TELEPORTING").color("#00FF00");
+        var secondaryMessage = Message.raw("Do not move until " + secondsLeft + " seconds.").color("#228B22");
+        var icon = new ItemStack("Ingredient_Void_Essence", 1).toPacket();
+
+        NotificationUtil.sendNotification(
+                packetHandler,
+                primaryMessage,
+                secondaryMessage,
+                icon);
     }
 }
