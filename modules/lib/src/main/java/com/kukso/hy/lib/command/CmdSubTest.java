@@ -3,8 +3,8 @@ package com.kukso.hy.lib.command;
 import com.hypixel.hytale.protocol.GameMode;
 import com.hypixel.hytale.server.core.command.system.CommandSender;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
-import com.kukso.hy.lib.locale.LocaleMan;
 import com.kukso.hy.lib.util.ColorUtil;
+import com.kukso.hy.lib.util.LocaleUtil;
 
 import java.util.Collections;
 import java.util.List;
@@ -87,25 +87,25 @@ class CmdSubTest implements CommandInterface {
     private void testLocale(CommandSender sender) {
         sender.sendMessage(ColorUtil.colorThis("&e&l=== LocaleMan Test ==="));
         sender.sendMessage(ColorUtil.colorThis(""));
-        sender.sendMessage(ColorUtil.colorThis("&7Loaded locales: &e" + String.join(", ", LocaleMan.getLoadedLocales())));
+        sender.sendMessage(ColorUtil.colorThis("&7Loaded locales: &e" + String.join(", ", LocaleUtil.getLoadedLocales())));
 
-        String welcome = LocaleMan.getRaw(LocaleMan.DEFAULT_LOCALE, "messages.welcome");
+        String welcome = LocaleUtil.getRaw(LocaleUtil.DEFAULT_LOCALE, "messages.welcome");
         sender.sendMessage(ColorUtil.colorThis("&7Raw welcome key: &f" + welcome));
 
-        String goodbye = LocaleMan.getRaw(LocaleMan.DEFAULT_LOCALE, "messages.goodbye");
+        String goodbye = LocaleUtil.getRaw(LocaleUtil.DEFAULT_LOCALE, "messages.goodbye");
         sender.sendMessage(ColorUtil.colorThis("&7Raw goodbye key: &f" + goodbye));
 
-        String prefix = LocaleMan.getRaw(LocaleMan.DEFAULT_LOCALE, "prefix");
+        String prefix = LocaleUtil.getRaw(LocaleUtil.DEFAULT_LOCALE, "prefix");
         sender.sendMessage(ColorUtil.colorThis("&7Prefix: &f" + prefix));
 
         if (sender instanceof PlayerRef player) {
-            String playerLocale = LocaleMan.getPlayerLocale(player);
+            String playerLocale = LocaleUtil.getPlayerLocale(player);
             sender.sendMessage(ColorUtil.colorThis("&7Your locale: &e" + playerLocale));
             sender.sendMessage(ColorUtil.colorThis("&7Personalized welcome:"));
-            sender.sendMessage(LocaleMan.get(player, "messages.welcome", Map.of("player", player.getUsername())));
+            sender.sendMessage(LocaleUtil.get(player, "messages.welcome", Map.of("player", player.getUsername())));
         }
 
-        String missing = LocaleMan.getRaw(LocaleMan.DEFAULT_LOCALE, "this.key.does.not.exist");
+        String missing = LocaleUtil.getRaw(LocaleUtil.DEFAULT_LOCALE, "this.key.does.not.exist");
         sender.sendMessage(ColorUtil.colorThis("&7Missing key test: &c" + missing));
 
         sender.sendMessage(ColorUtil.colorThis(""));

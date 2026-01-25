@@ -13,6 +13,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Main localization manager for KuksoLib.
+ * <p>
+ * <b>INTERNAL USE ONLY.</b> Developers should use {@link com.kukso.hy.lib.util.LocaleUtil} instead.
+ * </p>
  * Provides a fluent API for getting localized messages with color support.
  *
  * <h2>Usage Examples:</h2>

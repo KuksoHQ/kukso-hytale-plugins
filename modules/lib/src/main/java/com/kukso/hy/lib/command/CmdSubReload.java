@@ -3,7 +3,7 @@ package com.kukso.hy.lib.command;
 import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.command.system.CommandSender;
 import com.hypixel.hytale.server.core.plugin.PluginBase;
-import com.kukso.hy.lib.locale.LocaleMan;
+import com.kukso.hy.lib.util.LocaleUtil;
 
 import java.util.List;
 import java.util.logging.Level;
@@ -46,7 +46,7 @@ class CmdSubReload implements CommandInterface {
         sender.sendMessage(Message.raw("Reloading KuksoLib..."));
 
         // Reload localization
-        LocaleMan.reload();
+        LocaleUtil.reload();
 
         sender.sendMessage(Message.raw("KuksoLib reloaded successfully!").color("#55FF55"));
 
