@@ -14,7 +14,7 @@ import java.util.regex.Pattern;
  * Supports Minecraft-style color codes, hex colors,
  * and multiple color changes within a single string.
  */
-public class ColorMan {
+public class ColorUtil {
 
     private static final char COLOR_CHAR = '&';
     private static final Pattern HEX_PATTERN = Pattern.compile("&#([A-Fa-f0-9]{6})");
@@ -50,7 +50,7 @@ public class ColorMan {
      * @param text The text with color codes
      * @return A formatted Hytale Message
      */
-    public static Message translate(String text) {
+    public static Message colorThis(String text) {
         if (text == null || text.isEmpty()) {
             return Message.raw("");
         }

@@ -4,7 +4,7 @@ import com.hypixel.hytale.logger.HytaleLogger;
 import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.plugin.PluginBase;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
-import com.kukso.hy.lib.util.ColorMan;
+import com.kukso.hy.lib.util.ColorUtil;
 
 import java.nio.file.Path;
 import java.util.Collections;
@@ -146,7 +146,7 @@ public final class LocaleMan {
         }
 
         // Translate color codes and return Message
-        return ColorMan.translate(raw);
+        return ColorUtil.colorThis(raw);
     }
 
     /**

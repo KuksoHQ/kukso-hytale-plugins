@@ -4,7 +4,7 @@ import com.hypixel.hytale.protocol.GameMode;
 import com.hypixel.hytale.server.core.command.system.CommandSender;
 import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
-import com.kukso.hy.lib.util.ColorMan;
+import com.kukso.hy.lib.util.ColorUtil;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -44,7 +44,7 @@ class CmdSinglePlayerInfo implements CommandInterface {
     @Override
     public boolean execute(CommandSender sender, String[] args) {
         if (!(sender instanceof Player senderPlayer)) {
-            sender.sendMessage(ColorMan.translate("&cThis command can only be used by players."));
+            sender.sendMessage(ColorUtil.colorThis("&cThis command can only be used by players."));
             return true;
         }
 
@@ -57,7 +57,7 @@ class CmdSinglePlayerInfo implements CommandInterface {
             target = resolvePlayer(senderPlayer, targetName);
 
             if (target == null) {
-                sender.sendMessage(ColorMan.translate("&cPlayer not found: " + targetName));
+                sender.sendMessage(ColorUtil.colorThis("&cPlayer not found: " + targetName));
                 return true;
             }
         }
@@ -105,9 +105,9 @@ class CmdSinglePlayerInfo implements CommandInterface {
     private void displayPlayerInfo(CommandSender sender, Player target) {
         PlayerRef ref = target.getPlayerRef();
 
-        sender.sendMessage(ColorMan.translate("&e&l=== Player Info: " + ref.getUsername() + " ==="));
-        sender.sendMessage(ColorMan.translate("&7UUID: &f" + ref.getUuid()));
-        sender.sendMessage(ColorMan.translate("&7World: &f" + target.getWorld().getName()));
-        sender.sendMessage(ColorMan.translate("&7Language: &f" + ref.getLanguage()));
+        sender.sendMessage(ColorUtil.colorThis("&e&l=== Player Info: " + ref.getUsername() + " ==="));
+        sender.sendMessage(ColorUtil.colorThis("&7UUID: &f" + ref.getUuid()));
+        sender.sendMessage(ColorUtil.colorThis("&7World: &f" + target.getWorld().getName()));
+        sender.sendMessage(ColorUtil.colorThis("&7Language: &f" + ref.getLanguage()));
     }
 }

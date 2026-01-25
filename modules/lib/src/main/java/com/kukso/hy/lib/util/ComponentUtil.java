@@ -3,8 +3,11 @@ package com.kukso.hy.lib.util;
 import com.hypixel.hytale.component.Component;
 import com.hypixel.hytale.component.ComponentType;
 import com.hypixel.hytale.server.core.command.system.CommandContext;
+import com.hypixel.hytale.server.core.universe.PlayerRef;
+import com.hypixel.hytale.server.core.universe.Universe;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 
+import javax.annotation.Nullable;
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.List;
@@ -13,7 +16,7 @@ import java.util.List;
  * Utility class for handling Hytale's Entity Component System (ECS).
  * Uses reflection to work around potential API changes and generic type issues.
  */
-public class ComponentMan {
+public class ComponentUtil {
 
     // --- ARGUMENT HANDLING ---
     public static List<String> getArgs(CommandContext ctx) {
@@ -125,5 +128,33 @@ public class ComponentMan {
             Object entityRef,
             ComponentType<EntityStore, T> type) {
         return getComponent(store, entityRef, type) != null;
+    }
+
+    /**
+     * Find a player by name (case-insensitive).
+     */
+    @Nullable
+    public static PlayerRef findPlayer(String name) {
+        List<PlayerRef> players = Universe.get().getPlayers();
+        for (PlayerRef player : players) {
+            if (player.getUsername().equalsIgnoreCase(name)) {
+                return player;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Find a player by UUID.
+     */
+    @Nullable
+    public static PlayerRef findPlayerByUuid(java.util.UUID uuid) {
+        List<PlayerRef> players = Universe.get().getPlayers();
+        for (PlayerRef player : players) {
+            if (player.getUuid().equals(uuid)) {
+                return player;
+            }
+        }
+        return null;
     }
 }

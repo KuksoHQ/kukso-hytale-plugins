@@ -2,7 +2,7 @@ package com.kukso.hy.lib.command;
 
 import com.hypixel.hytale.protocol.GameMode;
 import com.hypixel.hytale.server.core.command.system.CommandSender;
-import com.kukso.hy.lib.util.ColorMan;
+import com.kukso.hy.lib.util.ColorUtil;
 
 import java.util.Collection;
 import java.util.List;
@@ -40,7 +40,7 @@ class CmdSubHelp implements CommandInterface {
 
     @Override
     public boolean execute(CommandSender sender, String[] args) {
-        sender.sendMessage(ColorMan.translate("&e&l=== KuksoLib Help ==="));
+        sender.sendMessage(ColorUtil.colorThis("&e&l=== KuksoLib Help ==="));
 
         if (manager == null) return true;
 
@@ -52,7 +52,7 @@ class CmdSubHelp implements CommandInterface {
 
             if (!hasPermission) continue;
 
-            sender.sendMessage(ColorMan.translate("&e" + cmd.getUsage() + " &7- " + cmd.getDescription()));
+            sender.sendMessage(ColorUtil.colorThis("&e" + cmd.getUsage() + " &7- " + cmd.getDescription()));
         }
         return true;
     }
