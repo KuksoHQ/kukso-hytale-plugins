@@ -50,7 +50,7 @@ public class ColorUtil {
      * @param text The text with color codes
      * @return A formatted Hytale Message
      */
-    public static Message colorThis(String text) {
+    public static Message translation(String text) {
         if (text == null || text.isEmpty()) {
             return Message.raw("");
         }

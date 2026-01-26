@@ -3,6 +3,7 @@ package com.kukso.hy.lib.util;
 import com.hypixel.hytale.component.Component;
 import com.hypixel.hytale.component.ComponentType;
 import com.hypixel.hytale.server.core.command.system.CommandContext;
+import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.Universe;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
@@ -153,6 +154,23 @@ public class ComponentUtil {
         for (PlayerRef player : players) {
             if (player.getUuid().equals(uuid)) {
                 return player;
+            }
+        }
+        return null;
+    }
+
+    @SuppressWarnings("removal")
+    private Player resolvePlayer(Player senderPlayer, String name) {
+        for (Player p : senderPlayer.getWorld().getPlayers()) {
+            String playerName = p.getPlayerRef().getUsername();
+            if (playerName.equalsIgnoreCase(name)) {
+                return p;
+            }
+        }
+        for (Player p : senderPlayer.getWorld().getPlayers()) {
+            String playerName = p.getPlayerRef().getUsername();
+            if (playerName.toLowerCase().startsWith(name.toLowerCase())) {
+                return p;
             }
         }
         return null;
