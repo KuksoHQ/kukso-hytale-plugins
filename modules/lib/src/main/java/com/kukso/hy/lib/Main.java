@@ -1,6 +1,6 @@
 package com.kukso.hy.lib;
 
-import com.kukso.hy.lib.command.CommandBootstrap;
+import com.kukso.hy.lib.commands.CommandBootstrap;
 import com.kukso.hy.lib.config.ConfigManager;
 import com.kukso.hy.lib.locale.LocaleMan;
 
