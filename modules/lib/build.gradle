@@ -54,7 +54,7 @@ if (versionFile.exists()) {
     versionFile.text = project.version?.toString() ?: "0.0.0"
     version = versionFile.text.trim()
 }
-println "[KuksoLib] Using project.version = ${version}"
+println "[KuksoHyLib] Using project.version = ${version}"
 
 repositories {
     mavenCentral()
