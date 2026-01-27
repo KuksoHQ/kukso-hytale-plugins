@@ -160,7 +160,7 @@ public class ComponentUtil {
     }
 
     @SuppressWarnings("removal")
-    private Player resolvePlayer(Player senderPlayer, String name) {
+    public Player resolvePlayer(Player senderPlayer, String name) {
         for (Player p : senderPlayer.getWorld().getPlayers()) {
             String playerName = p.getPlayerRef().getUsername();
             if (playerName.equalsIgnoreCase(name)) {
