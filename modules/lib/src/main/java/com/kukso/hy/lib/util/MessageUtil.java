@@ -3,68 +3,122 @@ package com.kukso.hy.lib.util;
 import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.command.system.CommandContext;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
+import com.kukso.hy.lib.locale.PlaceholderResolver;
+
+import java.util.Map;
 
 /**
- * Utility class for sending formatted, unformatted, translated
- * messages to the CommandContext or a PlayerRef.
+ * Public utility class for sending formatted, unformatted and
+ * translated messages to the CommandContext or a PlayerRef.
  */
 public class MessageUtil {
 
     /**
+     * Formats and sends a translation message to the CommandContext with placeholders.
+     */
+    public void sendTranslationFormatted(CommandContext ctx, String text, Map<String, String> placeholders) {
+        PlayerRef player = new HytaleUtil().getPlayerRef(ctx);
+        if (player != null) {
+            ctx.sendMessage(LocaleUtil.get(player, text, placeholders));
+        } else {
+            String translation = LocaleUtil.getRaw(LocaleUtil.DEFAULT_LOCALE, text);
+            translation = PlaceholderResolver.resolve(translation, placeholders);
+            ctx.sendMessage(ColorUtil.format(translation));
+        }
+    }
+
+    /**
+     * Formats and sends a translation message to the PlayerRef with placeholders.
+     */
+    public void sendTranslationFormatted(PlayerRef player, String text, Map<String, String> placeholders) {
+        player.sendMessage(LocaleUtil.get(player, text, placeholders));
+    }
+
+    /**
      * Formats and sends a translation message to the CommandContext.
      */
-    public void sendTranslationFormat(CommandContext ctx, String text) {
-        ctx.sendMessage(ColorUtil.translation(text));
+    public void sendTranslationFormatted(CommandContext ctx, String text) {
+        PlayerRef player = new HytaleUtil().getPlayerRef(ctx);
+        if (player != null) {
+            ctx.sendMessage(LocaleUtil.get(player, text));
+        } else {
+            String translation = LocaleUtil.getRaw(LocaleUtil.DEFAULT_LOCALE, text);
+            ctx.sendMessage(ColorUtil.format(translation));
+        }
     }
 
     /**
      * Formats and sends a translation message to the PlayerRef.
      */
-    public void sendTranslationFormat(PlayerRef player, String text) {
-        player.sendMessage(ColorUtil.translation(text));
+    public void sendTranslationFormatted(PlayerRef player, String text) {
+        player.sendMessage(LocaleUtil.get(player, text));
     }
 
     /**
      * Sends an unformatted translation message to the CommandContext.
      */
-    public void sendTranslationUnformat(CommandContext ctx, String text) {
+    public void sendTranslationUnformatted(CommandContext ctx, String text) {
+        PlayerRef player = new HytaleUtil().getPlayerRef(ctx);
+        String locale = player != null ? LocaleUtil.getPlayerLocale(player) : LocaleUtil.DEFAULT_LOCALE;
+        String translation = LocaleUtil.getRaw(locale, text);
+        ctx.sendMessage(Message.raw(translation));
+    }
 
-        ctx.sendMessage(message);
+    /**
+     * Sends an unformatted translation message to the CommandContext with placeholders.
+     */
+    public void sendTranslationUnformatted(CommandContext ctx, String text, java.util.Map<String, String> placeholders) {
+        PlayerRef player = new HytaleUtil().getPlayerRef(ctx);
+        String locale = player != null ? LocaleUtil.getPlayerLocale(player) : LocaleUtil.DEFAULT_LOCALE;
+        String translation = LocaleUtil.getRaw(locale, text);
+        translation = PlaceholderResolver.resolve(translation, placeholders);
+        ctx.sendMessage(Message.raw(translation));
     }
 
     /**
      * Sends an unformatted translation message to the PlayerRef.
      */
-    public void sendTranslationUnformat(PlayerRef player, String text) {
+    public void sendTranslationUnformatted(PlayerRef player, String text) {
+        String locale = LocaleUtil.getPlayerLocale(player);
+        String translation = LocaleUtil.getRaw(locale, text);
+        player.sendMessage(Message.raw(translation));
+    }
 
-        player.sendMessage(message);
+    /**
+     * Sends an unformatted translation message to the PlayerRef with placeholders.
+     */
+    public void sendTranslationUnformatted(PlayerRef player, String text, java.util.Map<String, String> placeholders) {
+        String locale = LocaleUtil.getPlayerLocale(player);
+        String translation = LocaleUtil.getRaw(locale, text);
+        translation = PlaceholderResolver.resolve(translation, placeholders);
+        player.sendMessage(Message.raw(translation));
     }
 
     /**
      * Sends an formatted String message to the CommandContext.
      */
-    public void sendStringformat(CommandContext ctx, String text) {
-
+    public void sendStringFormatted(CommandContext ctx, String text) {
+        ctx.sendMessage(ColorUtil.format(text));
     }
 
     /**
      * Sends an formatted String message to the PlayerRef.
      */
-    public void sendStringformat(PlayerRef player, String text) {
-
+    public void sendStringFormatted(PlayerRef player, String text) {
+        player.sendMessage(ColorUtil.format(text));
     }
 
     /**
      * Sends an unformatted String message to the CommandContext.
      */
-    public void sendStringUnformat(CommandContext ctx, String text) {
-
+    public void sendStringUnformatted(CommandContext ctx, String text) {
+        ctx.sendMessage(Message.raw(text));
     }
 
     /**
      * Sends an unformatted String message to the PlayerRef.
      */
-    public void sendStringUnformat(PlayerRef player, String text) {
-
+    public void sendStringUnformatted(PlayerRef player, String text) {
+        player.sendMessage(Message.raw(text));
     }
 }

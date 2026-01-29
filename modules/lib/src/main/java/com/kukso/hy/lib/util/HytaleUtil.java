@@ -2,6 +2,8 @@ package com.kukso.hy.lib.util;
 
 import com.hypixel.hytale.component.Component;
 import com.hypixel.hytale.component.ComponentType;
+import com.hypixel.hytale.component.Ref;
+import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.server.core.command.system.CommandContext;
 import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
@@ -17,7 +19,7 @@ import java.util.List;
  * Utility class for handling Hytale's Entity Component System (ECS).
  * Uses reflection to work around potential API changes and generic type issues.
  */
-public class ComponentUtil {
+public class HytaleUtil {
 
     // --- ARGUMENT HANDLING ---
     public static List<String> getArgs(CommandContext ctx) {
@@ -171,6 +173,22 @@ public class ComponentUtil {
             String playerName = p.getPlayerRef().getUsername();
             if (playerName.toLowerCase().startsWith(name.toLowerCase())) {
                 return p;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Helper to safely get the PlayerRef from a CommandContext.
+     * Returns null if the context is not a player.
+     */
+    @Nullable
+    public PlayerRef getPlayerRef(CommandContext ctx) {
+        if (ctx.isPlayer()) {
+            Ref<EntityStore> ref = ctx.senderAsPlayerRef();
+            if (ref != null && ref.isValid()) {
+                Store<EntityStore> store = ref.getStore();
+                return (PlayerRef) store.getComponent(ref, PlayerRef.getComponentType());
             }
         }
         return null;

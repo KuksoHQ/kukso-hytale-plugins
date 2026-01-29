@@ -149,7 +149,7 @@ public final class LocaleMan {
         }
 
         // Translate color codes and return Message
-        return ColorUtil.translation(raw);
+        return ColorUtil.format(raw);
     }
 
     /**

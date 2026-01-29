@@ -15,14 +15,14 @@ public class VersionUtil {
     public void check(CommandSender sender, String owner, String name, String version) {
         String latestTag = fetchLatestReleaseTag(owner, name);
         if (latestTag == null) {
-            sender.sendMessage(ColorUtil.translation("§eCouldn't get the version info for " + name + ". Please check again later."));
+            sender.sendMessage(ColorUtil.format("§eCouldn't get the version info for " + name + ". Please check again later."));
         } else {
             // latestTag sample: "v1.2.3" or "1.2.3"
             // compare with version; basic semver comparison
             if (isOutdated(version, latestTag)) {
-                sender.sendMessage(ColorUtil.translation("§eThere is a new version for §6" + name + "§e: §6" + latestTag + "§e. Please update!"));
+                sender.sendMessage(ColorUtil.format("§eThere is a new version for §6" + name + "§e: §6" + latestTag + "§e. Please update!"));
             } else {
-                sender.sendMessage(ColorUtil.translation("§2You are running the latest version for §6" + name + "§2."));
+                sender.sendMessage(ColorUtil.format("§2You are running the latest version for §6" + name + "§2."));
             }
         }
     }
