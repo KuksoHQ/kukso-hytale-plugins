@@ -3,7 +3,7 @@ package com.kukso.hy.lib.commands;
 import com.hypixel.hytale.logger.HytaleLogger;
 import com.hypixel.hytale.server.core.command.system.CommandRegistry;
 import com.hypixel.hytale.server.core.plugin.PluginBase;
-import com.kukso.hy.lib.commands.kuksolib.KuksoLibCmdCollection;
+import com.kukso.hy.lib.commands.kuksolib.KuksoLibCommandCollection;
 
 /**
  * Internal command registration for KuksoLib.
@@ -25,7 +25,7 @@ public final class CommandBootstrap {
     public static void register(PluginBase plugin) {
         HytaleLogger logger = plugin.getLogger();
         CommandRegistry registry = plugin.getCommandRegistry();
-        registry.registerCommand(new KuksoLibCmdCollection(plugin));
+        registry.registerCommand(new KuksoLibCommandCollection(plugin));
 
         // Register tree command: /kuksolib <subcommand>
 //        CommandTreeBase mgr = CommandRegistrar.treeWithAliases(plugin, "kuksolib", "KuksoLib main command", "klib");

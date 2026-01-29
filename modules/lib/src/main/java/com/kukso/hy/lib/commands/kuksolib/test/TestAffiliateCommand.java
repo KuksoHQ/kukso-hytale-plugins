@@ -7,13 +7,15 @@ import com.hypixel.hytale.server.core.command.system.basecommands.AbstractPlayer
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
+import com.kukso.hy.lib.util.MessageUtil;
 import org.checkerframework.checker.nullness.compatqual.NonNullDecl;
 
-public class TestAffiliateCommand extends AbstractPlayerCommand {
+class TestAffiliateCommand extends AbstractPlayerCommand {
 
-    public TestAffiliateCommand() {
+    MessageUtil messageUtil = new MessageUtil();
+
+    TestAffiliateCommand() {
         super("affiliate", "Show affiliate link");
-        // Porting switch cases: "lang", "language"
         addAliases("sponsor");
     }
 

@@ -28,7 +28,7 @@ public class PlayerInfoCommand extends AbstractPlayerCommand {
         PlayerRef target = commandContext.get(targetArg);
 
         if (target == null) {
-            playerRef.sendMessage(ColorUtil.translation("&cPlayer not found: " + targetArg));
+            playerRef.sendMessage(ColorUtil.format("&cPlayer not found: " + targetArg));
             return;
         }
 
@@ -40,10 +40,10 @@ public class PlayerInfoCommand extends AbstractPlayerCommand {
         //PlayerRef ref = target.getPlayerRef();
         PlayerRef ref = target;
 
-        sender.sendMessage(ColorUtil.translation("&e&l=== Player Info: " + ref.getUsername() + " ==="));
-        sender.sendMessage(ColorUtil.translation("&7UUID: &f" + target.getUuid()));
-        sender.sendMessage(ColorUtil.translation("&7World: &f" + target.getWorldUuid()));
-        sender.sendMessage(ColorUtil.translation("&7Language: &f" + ref.getLanguage()));
+        sender.sendMessage(ColorUtil.format("&e&l=== Player Info: " + ref.getUsername() + " ==="));
+        sender.sendMessage(ColorUtil.format("&7UUID: &f" + target.getUuid()));
+        sender.sendMessage(ColorUtil.format("&7World: &f" + target.getWorldUuid()));
+        sender.sendMessage(ColorUtil.format("&7Language: &f" + ref.getLanguage()));
     }
 
 }
