@@ -13,10 +13,10 @@ import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import com.hypixel.hytale.server.core.command.system.arguments.types.ArgTypes;
 import com.hypixel.hytale.server.core.command.system.arguments.system.RequiredArg;
-import com.hypixel.hytale.math.vector.Vector3d;
-import com.hypixel.hytale.math.vector.Vector3f;
 import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.modules.entity.teleport.Teleport;
+import com.kukso.hy.warps.util.HytaleApiCompat;
+import com.kukso.hy.warps.util.HytaleApiCompat.Position;
 import com.kukso.hy.warps.util.PermissionUtil;
 
 import javax.annotation.Nonnull;
@@ -94,11 +94,12 @@ public class WarpCommand extends AbstractPlayerCommand {
                                        Ref<EntityStore> ref, World world, WarpModel warp,
                                        String warpName, int warmupSeconds) {
         warpManager.setWarmingUp(playerUuid, true);
-        // Copy position values - getPosition() may return a mutable reference
-        Vector3d pos = player.getTransform().getPosition();
-        final double startX = pos.x;
-        final double startY = pos.y;
-        final double startZ = pos.z;
+        Position startPosition = getCurrentPosition(store, ref);
+        if (startPosition == null) {
+            warpManager.setWarmingUp(playerUuid, false);
+            player.sendMessage(Message.raw("Could not read your current position."));
+            return;
+        }
         final int[] secondsRemaining = {warmupSeconds};
 
         // Send initial notification only once (no clear method exists)
@@ -114,8 +115,12 @@ public class WarpCommand extends AbstractPlayerCommand {
                 }
 
                 // Check if player moved
-                Vector3d currentPosition = player.getTransform().getPosition();
-                if (hasPlayerMoved(startX, startY, startZ, currentPosition)) {
+                Position currentPosition = getCurrentPosition(store, ref);
+                if (currentPosition == null) {
+                    cancelWarmup(player, playerUuid, futureHolder[0]);
+                    return;
+                }
+                if (hasPlayerMoved(startPosition, currentPosition)) {
                     cancelWarmup(player, playerUuid, futureHolder[0]);
                     return;
                 }
@@ -132,10 +137,14 @@ public class WarpCommand extends AbstractPlayerCommand {
         }, 1, 1, TimeUnit.SECONDS);
     }
 
-    private boolean hasPlayerMoved(double startX, double startY, double startZ, Vector3d current) {
-        double dx = current.x - startX;
-        double dy = current.y - startY;
-        double dz = current.z - startZ;
+    private Position getCurrentPosition(Store<EntityStore> store, Ref<EntityStore> ref) {
+        return HytaleApiCompat.getPosition(store, ref);
+    }
+
+    private boolean hasPlayerMoved(Position start, Position current) {
+        double dx = current.x() - start.x();
+        double dy = current.y() - start.y();
+        double dz = current.z() - start.z();
         return Math.sqrt(dx * dx + dy * dy + dz * dz) > MOVEMENT_THRESHOLD;
     }
 
@@ -149,11 +158,7 @@ public class WarpCommand extends AbstractPlayerCommand {
                                   Ref<EntityStore> ref, World world, WarpModel warp, String warpName) {
         warpManager.setWarmingUp(playerUuid, false);
 
-        Vector3f rot = new Vector3f();
-        rot.setYaw(warp.yaw);
-        rot.setPitch(0);
-
-        Teleport teleport = new Teleport(world, new Vector3d(warp.x, warp.y, warp.z), rot);
+        Teleport teleport = HytaleApiCompat.createTeleport(world, warp.x, warp.y, warp.z, warp.yaw, 0.0F);
         store.addComponent(ref, Teleport.getComponentType(), teleport);
         player.sendMessage(Message.raw("Teleported to " + warpName));
 

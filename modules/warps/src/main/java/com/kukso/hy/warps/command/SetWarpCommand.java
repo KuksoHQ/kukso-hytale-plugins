@@ -2,9 +2,6 @@ package com.kukso.hy.warps.command;
 
 //import com.kukso.hy.lib.locale.LocaleMan;
 import com.hypixel.hytale.server.core.Message;
-import com.hypixel.hytale.server.core.modules.entitystats.EntityStatMap;
-import com.hypixel.hytale.server.core.modules.entitystats.EntityStatValue;
-import com.hypixel.hytale.server.core.permissions.HytalePermissions;
 import com.kukso.hy.warps.WarpManager;
 import com.hypixel.hytale.server.core.command.system.basecommands.AbstractPlayerCommand;
 import com.hypixel.hytale.server.core.command.system.CommandContext;
@@ -15,12 +12,11 @@ import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import com.hypixel.hytale.server.core.command.system.arguments.types.ArgTypes;
 import com.hypixel.hytale.server.core.command.system.arguments.system.RequiredArg;
-import com.hypixel.hytale.math.vector.Vector3d;
-import com.hypixel.hytale.math.vector.Vector3f;
+import com.kukso.hy.warps.util.HytaleApiCompat;
+import com.kukso.hy.warps.util.HytaleApiCompat.Position;
+import com.kukso.hy.warps.util.HytaleApiCompat.Rotation;
 
 import javax.annotation.Nonnull;
-import javax.swing.text.html.parser.Entity;
-import java.util.Map;
 
 public class SetWarpCommand extends AbstractPlayerCommand {
     private final WarpManager warpManager;
@@ -42,10 +38,14 @@ public class SetWarpCommand extends AbstractPlayerCommand {
             @Nonnull PlayerRef player,
             @Nonnull World world) {
         String name = context.get(nameArg);
-        Vector3d pos = player.getTransform().getPosition();
-        Vector3f rot = player.getHeadRotation();
+        Position pos = HytaleApiCompat.getPosition(store, ref);
+        Rotation rot = HytaleApiCompat.getHeadRotation(store, ref);
+        if (pos == null || rot == null) {
+            player.sendMessage(Message.raw("Could not read your current position."));
+            return;
+        }
 
-        warpManager.createWarp(name, player.getWorldUuid(), pos.x, pos.y, pos.z, rot.getYaw(), rot.getPitch());
+        warpManager.createWarp(name, player.getWorldUuid(), pos.x(), pos.y(), pos.z(), rot.yaw(), rot.pitch());
         //player.sendMessage(LocaleMan.get(player, "warps.set_success", Map.of("warp", name)));
         player.sendMessage(Message.raw("Warp " + name + " set successfully."));
     }
