@@ -1,0 +1,6 @@
+[2026/01/18 22:46:03   INFO]             [KuksoLib|P] Commands (6) registered for KuksoLib
+-=|Setup|99.0
+[2026/01/18 22:46:03   INFO]             [KuksoWarps] [KuksoWarps] KuksoLib detected. Using centralized LocaleMan.
+[2026/01/18 22:46:03   INFO]             [KuksoWarps] [KuksoWarps] Loaded locales: [en_US]
+[2026/01/18 22:46:15   INFO]  [CommandManager] MBD executed command: delwarp toprak
+[2026/01/18 22:46:22   INFO]  [CommandManager] MBD executed command: warp toprak
