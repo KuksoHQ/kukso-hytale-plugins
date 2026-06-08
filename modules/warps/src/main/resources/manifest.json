@@ -12,7 +12,7 @@
   "ServerVersion": "${server_version}",
   "Dependencies": {},
   "OptionalDependencies": {
-    "com.kukso.hy.lib:KuksoHyLib": "*"
+    "com.kukso.hytale.lib:KuksoLib": "*"
   },
   "DisabledByDefault": false,
   "Main": "${entry_point}",

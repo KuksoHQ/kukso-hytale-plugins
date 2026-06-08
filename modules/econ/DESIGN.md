@@ -14,8 +14,8 @@ Create a new Hytale economy plugin (`kukso-hy-eco`) that uses KuksoLib as its co
 ## Plugin Overview
 
 **Name:** KuksoHyEco
-**Package:** `com.kukso.hy.eco`
-**Dependency:** `com.kukso.hy.lib:KuksoLib`
+**Package:** `com.kukso.hytale.eco`
+**Dependency:** `com.kukso.hytale.lib:KuksoLib`
 
 **Purpose:** Provides user-facing economy commands (`/balance`, `/pay`, `/money`, etc.) that KuksoLib deliberately does not provide (as a library-only architecture).
 
@@ -24,30 +24,30 @@ Create a new Hytale economy plugin (`kukso-hy-eco`) that uses KuksoLib as its co
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                       KuksoHyEco                                │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐          │
-│  │   Commands   │  │   Listeners  │  │   Config     │          │
-│  │  /bal /pay   │  │ PlayerJoin   │  │  config.json │          │
-│  └──────┬───────┘  └──────┬───────┘  └──────┬───────┘          │
-│         │                 │                 │                   │
-│         ▼                 ▼                 ▼                   │
-│  ┌─────────────────────────────────────────────────────────────┐│
-│  │              EcoProvider (implements Economy)               ││
-│  │   - Registers currencies via CurrencyManager                ││
-│  │   - Implements deposit/withdraw/transfer                    ││
-│  │   - Registers as provider via ServiceManager                ││
-│  └─────────────────────────────────────────────────────────────┘│
-└─────────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                         KUKSOLIB                                │
-│  ┌───────────┐  ┌───────────┐  ┌───────────┐  ┌───────────┐    │
-│  │ ColorMan  │  │ LocaleMan │  │ Economy   │  │ CmdSystem │    │
-│  │           │  │           │  │ API       │  │           │    │
-│  └───────────┘  └───────────┘  └───────────┘  └───────────┘    │
-└─────────────────────────────────────────────────────────────────┘
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚                       KuksoHyEco                                â”‚
+â”‚  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”          â”‚
+â”‚  â”‚   Commands   â”‚  â”‚   Listeners  â”‚  â”‚   Config     â”‚          â”‚
+â”‚  â”‚  /bal /pay   â”‚  â”‚ PlayerJoin   â”‚  â”‚  config.json â”‚          â”‚
+â”‚  â””â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”˜  â””â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”˜  â””â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”˜          â”‚
+â”‚         â”‚                 â”‚                 â”‚                   â”‚
+â”‚         â–¼                 â–¼                 â–¼                   â”‚
+â”‚  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”â”‚
+â”‚  â”‚              EcoProvider (implements Economy)               â”‚â”‚
+â”‚  â”‚   - Registers currencies via CurrencyManager                â”‚â”‚
+â”‚  â”‚   - Implements deposit/withdraw/transfer                    â”‚â”‚
+â”‚  â”‚   - Registers as provider via ServiceManager                â”‚â”‚
+â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+                              â”‚
+                              â–¼
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚                         KUKSOLIB                                â”‚
+â”‚  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”    â”‚
+â”‚  â”‚ ColorMan  â”‚  â”‚ LocaleMan â”‚  â”‚ Economy   â”‚  â”‚ CmdSystem â”‚    â”‚
+â”‚  â”‚           â”‚  â”‚           â”‚  â”‚ API       â”‚  â”‚           â”‚    â”‚
+â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜    â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 ```
 
 ---
@@ -89,7 +89,7 @@ public void registerCurrencies() {
     },
     "gems": {
       "displayName": "Gems",
-      "symbol": "💎",
+      "symbol": "ðŸ’Ž",
       "format": "{amount} {symbol}",
       "decimalPlaces": 0,
       "startingBalance": 0
@@ -185,24 +185,24 @@ Message msg = LocaleMan.get(playerRef, "messages.pay.sent",
 ## Package Structure
 
 ```
-com.kukso.hy.eco/
-├── Main.java                    # Plugin entry point
-├── EcoProvider.java             # Economy interface implementation
-├── config/
-│   └── EcoConfig.java           # Configuration loader
-├── command/
-│   ├── EcoCmdManager.java       # Command dispatcher
-│   └── sub/
-│       ├── BalanceCmd.java      # /balance command
-│       ├── PayCmd.java          # /pay command
-│       ├── BaltopCmd.java       # /baltop command
-│       └── admin/
-│           ├── GiveCmd.java     # /eco give
-│           ├── TakeCmd.java     # /eco take
-│           ├── SetCmd.java      # /eco set
-│           └── ResetCmd.java    # /eco reset
-└── listener/
-    └── PlayerJoinListener.java  # Welcome message, account creation
+com.kukso.hytale.eco/
+â”œâ”€â”€ Main.java                    # Plugin entry point
+â”œâ”€â”€ EcoProvider.java             # Economy interface implementation
+â”œâ”€â”€ config/
+â”‚   â””â”€â”€ EcoConfig.java           # Configuration loader
+â”œâ”€â”€ command/
+â”‚   â”œâ”€â”€ EcoCmdManager.java       # Command dispatcher
+â”‚   â””â”€â”€ sub/
+â”‚       â”œâ”€â”€ BalanceCmd.java      # /balance command
+â”‚       â”œâ”€â”€ PayCmd.java          # /pay command
+â”‚       â”œâ”€â”€ BaltopCmd.java       # /baltop command
+â”‚       â””â”€â”€ admin/
+â”‚           â”œâ”€â”€ GiveCmd.java     # /eco give
+â”‚           â”œâ”€â”€ TakeCmd.java     # /eco take
+â”‚           â”œâ”€â”€ SetCmd.java      # /eco set
+â”‚           â””â”€â”€ ResetCmd.java    # /eco reset
+â””â”€â”€ listener/
+    â””â”€â”€ PlayerJoinListener.java  # Welcome message, account creation
 ```
 
 ---
@@ -210,11 +210,11 @@ com.kukso.hy.eco/
 ## Main Plugin Class
 
 ```java
-package com.kukso.hy.eco;
+package com.kukso.hytale.eco;
 
-import com.kukso.hy.lib.economy.CurrencyManager;
-import com.kukso.hy.lib.service.ServiceManager;
-import com.kukso.hy.lib.service.ServicePriority;
+import com.kukso.hytale.lib.economy.CurrencyManager;
+import com.kukso.hytale.lib.service.ServiceManager;
+import com.kukso.hytale.lib.service.ServicePriority;
 import hytale.server.plugin.JavaPlugin;
 
 public class Main extends JavaPlugin {
@@ -272,12 +272,12 @@ public class Main extends JavaPlugin {
 ### BalanceCmd.java
 
 ```java
-package com.kukso.hy.eco.command.sub;
+package com.kukso.hytale.eco.command.sub;
 
-import com.kukso.hy.lib.command.CmdInterface;
-import com.kukso.hy.lib.locale.LocaleMan;
-import com.kukso.hy.lib.service.ServiceManager;
-import com.kukso.hy.lib.economy.Economy;
+import com.kukso.hytale.lib.command.CmdInterface;
+import com.kukso.hytale.lib.locale.LocaleMan;
+import com.kukso.hytale.lib.service.ServiceManager;
+import com.kukso.hytale.lib.economy.Economy;
 import hytale.server.world.GameMode;
 
 public class BalanceCmd implements CmdInterface {
@@ -340,7 +340,7 @@ public class BalanceCmd implements CmdInterface {
 ### PayCmd.java
 
 ```java
-package com.kukso.hy.eco.command.sub;
+package com.kukso.hytale.eco.command.sub;
 
 public class PayCmd implements CmdInterface {
 

@@ -1,10 +1,10 @@
-# kukso-hy-lib
+# kukso-hytale-lib
 
 A core library for the Kukso Hytale Mods ecosystem. Built by developers with Minecraft plugin experience, now bringing that expertise to Hytale modding.
 
 ## Overview
 
-**kukso-hy-lib** provides essential utilities and modules that streamline Hytale mod development. Instead of reinventing the wheel for every mod, this library offers battle-tested solutions for common modding needs.
+**kukso-hytale-lib** provides essential utilities and modules that streamline Hytale mod development. Instead of reinventing the wheel for every mod, this library offers battle-tested solutions for common modding needs.
 
 ## Features
 
@@ -15,7 +15,7 @@ Multi-language support based on player's client language setting.
 Note: Hytale doesn't support it yet. This module works with only 1 <default> language. But you can still implement it in your plugin, playerRef always returns EN client language for now.
 
 ```java
-import com.kukso.hy.lib.util.LocaleUtil;
+import com.kukso.hytale.lib.util.LocaleUtil;
 
 // Basic usage - automatically uses player's language
 Message msg = LocaleUtil.get(playerRef, "messages.welcome");
@@ -32,7 +32,7 @@ String text = LocaleUtil.getRaw("en_US", "messages.welcome");
 Set<String> loaded = LocaleUtil.getLoadedLocales();
 ```
 
-**Language file example** (`/mods/KuksoHyLib/locales/en_US.json`):
+**Language file example** (`/mods/KuksoLib/locales/en_US.json`):
 ```json
 {
   "prefix": "&e[MyPlugin]&r",
@@ -51,7 +51,7 @@ Set<String> loaded = LocaleUtil.getLoadedLocales();
 - JSON-based language files (no external dependencies)
 - Automatic placeholder resolution with `{placeholder}` syntax
 - Player language detection from client settings (Hytale doesn't support this yet)
-- Fallback chain: Player locale → Default locale (en_US) → Key name (Hytale doesn't support this yet)
+- Fallback chain: Player locale â†’ Default locale (en_US) â†’ Key name (Hytale doesn't support this yet)
 - Thread-safe with concurrent access support
 - Hot-reload via `/kuksolib reload`
 - Color code support in translations (integrates with ColorMan)
@@ -63,7 +63,7 @@ Set<String> loaded = LocaleUtil.getLoadedLocales();
 Translate Minecraft-style color codes to Hytale's Message format.
 
 ```java
-import com.kukso.hy.lib.util.ColorUtil;
+import com.kukso.hytale.lib.util.ColorUtil;
 
 // Basic color codes - returns Hytale Message object
 Message msg = ColorUtil.colorThis("&aGreen &bAqua &cRed");
@@ -123,7 +123,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.kukso.hy:kukso-hy-lib:1.0-SNAPSHOT'
+    implementation 'com.kukso.hytale:kukso-hytale-lib:1.0-SNAPSHOT'
 }
 ```
 
@@ -136,8 +136,8 @@ dependencies {
 </repository>
 
 <dependency>
-    <groupId>com.kukso.hy</groupId>
-    <artifactId>kukso-hy-lib</artifactId>
+    <groupId>com.kukso.hytale</groupId>
+    <artifactId>kukso-hytale-lib</artifactId>
     <version>1.0-SNAPSHOT</version>
 </dependency>
 ```
@@ -149,19 +149,19 @@ dependencies {
 
 ## Quick Start
 
-KuksoHyLib is a standalone plugin. Simply include it as a dependency in your plugin's `manifest.json`:
+KuksoLib is a standalone plugin. Simply include it as a dependency in your plugin's `manifest.json`:
 
 ```json
 {
-  "Dependencies": ["com.kukso.hy.lib:KuksoLib"]
+  "Dependencies": ["com.kukso.hytale.lib:KuksoLib"]
 }
 ```
 
 Then use the utilities in your plugin:
 
 ```java
-import com.kukso.hy.lib.util.ColorMan;
-import com.kukso.hy.lib.locale.LocaleMan;
+import com.kukso.hytale.lib.util.ColorMan;
+import com.kukso.hytale.lib.locale.LocaleMan;
 
 public class MyPlugin extends JavaPlugin {
 
@@ -202,7 +202,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Support
 
 - Discord: [discord.gg/kukso](https://discord.gg/kukso)
-- Issues: [GitHub Issues](https://github.com/kukso/kukso-hy-lib/issues)
+- Issues: [GitHub Issues](https://github.com/kukso/kukso-hytale-lib/issues)
 
 ---
 
