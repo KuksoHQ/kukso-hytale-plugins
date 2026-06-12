@@ -1,8 +1,8 @@
-# KuksoHyEco - Economy Plugin Design Document
+# KuksoEcon - Economy Plugin Design Document
 
 ## Summary
 
-Create a new Hytale economy plugin (`kukso-hy-eco`) that uses KuksoLib as its core library. This plugin will provide user-facing economy commands while leveraging KuksoLib's APIs for:
+Create a Hytale economy plugin (`KuksoEcon`) that uses KuksoLib as its core library. This plugin will provide user-facing economy commands while leveraging KuksoLib's APIs for:
 - **Localization** (LocaleMan)
 - **String colorization** (ColorMan)
 - **Economy infrastructure** (Economy API, CurrencyManager)
@@ -13,7 +13,7 @@ Create a new Hytale economy plugin (`kukso-hy-eco`) that uses KuksoLib as its co
 
 ## Plugin Overview
 
-**Name:** KuksoHyEco
+**Name:** KuksoEcon
 **Package:** `com.kukso.hytale.eco`
 **Dependency:** `com.kukso.hytale.lib:KuksoLib`
 
@@ -127,7 +127,7 @@ public void registerCurrencies() {
 
 Uses KuksoLib's LocaleMan for all player-facing messages:
 
-**File:** `plugins/KuksoHyEco/locales/en_US.json`
+**File:** `plugins/KuksoEcon/locales/en_US.json`
 
 ```json
 {
@@ -244,7 +244,7 @@ public class Main extends JavaPlugin {
 
     @Override
     protected void start() {
-        getLogger().at(Level.INFO).log("KuksoHyEco enabled!");
+        getLogger().at(Level.INFO).log("KuksoEcon enabled!");
     }
 
     @Override
@@ -257,7 +257,7 @@ public class Main extends JavaPlugin {
         // Unregister as provider
         ServiceManager.unregisterAll(this);
 
-        getLogger().at(Level.INFO).log("KuksoHyEco disabled!");
+        getLogger().at(Level.INFO).log("KuksoEcon disabled!");
     }
 
     public static Main getInstance() { return instance; }
@@ -444,8 +444,8 @@ public class PayCmd implements CmdInterface {
 
 ## Next Steps
 
-1. Create a new project/repository for the actual plugin implementation
-2. Set up Gradle build with KuksoLib dependency
+1. Continue implementation in the `kukso-hytale-plugins` monorepo
+2. Keep Gradle build wiring through the KuksoLib module dependency
 3. Implement the core classes (Main, EcoProvider, EcoConfig)
 4. Implement commands following the CmdInterface pattern
 5. Create locale files for supported languages

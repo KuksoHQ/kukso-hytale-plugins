@@ -1,10 +1,10 @@
-# kukso-hytale-lib
+# KuksoLib for Hytale
 
 A core library for the Kukso Hytale Mods ecosystem. Built by developers with Minecraft plugin experience, now bringing that expertise to Hytale modding.
 
 ## Overview
 
-**kukso-hytale-lib** provides essential utilities and modules that streamline Hytale mod development. Instead of reinventing the wheel for every mod, this library offers battle-tested solutions for common modding needs.
+**KuksoLib** provides essential utilities and modules that streamline Hytale mod development. Instead of reinventing the wheel for every mod, this library offers battle-tested solutions for common modding needs.
 
 ## Features
 
@@ -115,32 +115,7 @@ player.sendMessage(msg);
 
 ## Installation
 
-### Gradle
-
-```groovy
-repositories {
-    maven { url 'https://repo.kukso.com/releases' }
-}
-
-dependencies {
-    implementation 'com.kukso.hytale:kukso-hytale-lib:1.0-SNAPSHOT'
-}
-```
-
-### Maven
-
-```xml
-<repository>
-    <id>kukso-repo</id>
-    <url>https://repo.kukso.com/releases</url>
-</repository>
-
-<dependency>
-    <groupId>com.kukso.hytale</groupId>
-    <artifactId>kukso-hytale-lib</artifactId>
-    <version>1.0-SNAPSHOT</version>
-</dependency>
-```
+KuksoLib for Hytale is developed in the `kukso-hytale-plugins` monorepo. Hytale modules are not published to Maven until Kukso has a real package repository; use the monorepo module during development and release jars for server installs.
 
 ## Requirements
 
@@ -189,7 +164,7 @@ Access via `/kuksolib` (aliases: `/klib`, `/kl`):
 
 ## Documentation
 
-Full documentation available at: [docs.kukso.com/hy-lib](https://docs.kukso.com/hy-lib)
+Full documentation is available from the Kukso documentation website.
 
 ## Contributing
 
@@ -202,7 +177,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Support
 
 - Discord: [discord.gg/kukso](https://discord.gg/kukso)
-- Issues: [GitHub Issues](https://github.com/kukso/kukso-hytale-lib/issues)
+- Issues: [GitHub Issues](https://github.com/KuksoHQ/kukso-hytale-plugins/issues)
 
 ---
 

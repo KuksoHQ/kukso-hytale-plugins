@@ -27,7 +27,7 @@ public class VersionCommand extends AbstractAsyncCommand {
             String version = String.valueOf(plugin.getManifest().getVersion());
             String name = plugin.getName();
 
-            checker.check(ctx.sender(), "KuksoHQ", "kukso-hytale-lib", version);
+            checker.check(ctx.sender(), "KuksoHQ", "kukso-hytale-plugins", version);
         });
     }
 }

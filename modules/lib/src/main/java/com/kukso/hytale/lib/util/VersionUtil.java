@@ -8,7 +8,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-// https://raw.githubusercontent.com/KuksoHQ/kukso-hytale-lib/refs/heads/main/version.txt
+// https://raw.githubusercontent.com/KuksoHQ/kukso-hytale-plugins/refs/heads/main/modules/lib/version.txt
 public class VersionUtil {
     private static final HytaleLogger LOGGER = HytaleLogger.forEnclosingClass();
 
@@ -78,7 +78,7 @@ public class VersionUtil {
     }
 
     /**
-     * Simple version comparison: It returns true if version < latestTag.
+     * Simple version comparison: returns true when the local version is older than latestTag.
      * version and latestTag must be in â€œ1.2.3â€ or â€œv1.2.3â€ format.
      */
     public boolean isOutdated(String localVersion, String latestTag) {

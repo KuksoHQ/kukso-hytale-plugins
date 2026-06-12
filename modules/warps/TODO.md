@@ -3,14 +3,14 @@ Build successful. Here's the solution:
 PlayerCmdWrapper - A new wrapper that extends AbstractPlayerCommand and adapts CmdInterface for standalone player commands.
 
 How it works:
-1. Commands implement CmdInterface from kukso-hytale-lib (centralized interface)
+1. Commands implement CmdInterface from KuksoLib (centralized interface)
 2. PlayerCmdWrapper wraps them to work as standalone player commands
 3. Registration: new PlayerCmdWrapper(new DelWarpCommand(warpManager))
 
-To centralize in kukso-hytale-lib:                                                                                                                                            
-Move PlayerCmdWrapper to kukso-hytale-lib so all your plugins can use it:
+To centralize in KuksoLib:
+Move PlayerCmdWrapper to KuksoLib so all your plugins can use it:
 
-kukso-hytale-lib/src/main/java/com/kukso/hy/lib/command/PlayerCmdWrapper.java
+kukso-hytale-plugins/modules/lib/src/main/java/com/kukso/hytale/lib/command/PlayerCmdWrapper.java
 
 Then in any plugin:                                                                                                                                                       
 import com.kukso.hytale.lib.command.PlayerCmdWrapper;
@@ -25,7 +25,7 @@ This gives you:
 
 The core issue: Hytale's PlayerRef doesn't implement CommandSender, so CmdInterface (which uses CommandSender) can't work directly with player commands.
 
-For kukso-hytale-lib: You should create a PlayerCmdInterface specifically for player commands:
+For KuksoLib: You should create a PlayerCmdInterface specifically for player commands:
 
 public interface PlayerCmdInterface {                                                                                                                                     
 String getName();                                                                                                                                                     
