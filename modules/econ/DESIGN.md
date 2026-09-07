@@ -1,5 +1,7 @@
 # KuksoEcon - Economy Plugin Design Document
 
+Not included in the Gradle build and not released. Spec only.
+
 ## Summary
 
 Create a Hytale economy plugin (`KuksoEcon`) that uses KuksoLib as its core library. This plugin will provide user-facing economy commands while leveraging KuksoLib's APIs for:
