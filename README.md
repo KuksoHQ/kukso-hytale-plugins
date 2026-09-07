@@ -5,8 +5,9 @@ Gradle monorepo for Kukso Hytale mods.
 ## Modules
 
 - `:lib` - `KuksoLib`, the shared Hytale mod library.
-- `:econ` - `KuksoEcon`.
 - `:warps` - `KuksoWarps`.
+
+`modules/econ` is a design spec for a future KuksoEcon plugin. It is not a Gradle module and is not released.
 
 ## Build
 

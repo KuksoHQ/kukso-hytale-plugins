@@ -20,7 +20,9 @@ jobs:
       - name: Upload release jars
         uses: softprops/action-gh-release@v2
         with:
-          files: modules/*/build/libs/Kukso*-Hytale-*.jar
+          files: |
+            modules/lib/build/libs/Kukso*-Hytale-*.jar
+            modules/warps/build/libs/Kukso*-Hytale-*.jar
       - name: Generate KuksoLib JavaDocs
         if: startsWith(github.ref_name, 'kukso-hytale-lib-v')
         run: ./gradlew :lib:javadoc -Pgame_build=latest

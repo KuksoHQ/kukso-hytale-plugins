@@ -16,7 +16,6 @@ dependencyResolutionManagement {
 
 rootProject.name = "kukso-hytale"
 
-include(":lib", ":econ", ":warps")
+include(":lib", ":warps")
 project(":lib").projectDir = file("modules/lib")
-project(":econ").projectDir = file("modules/econ")
 project(":warps").projectDir = file("modules/warps")
