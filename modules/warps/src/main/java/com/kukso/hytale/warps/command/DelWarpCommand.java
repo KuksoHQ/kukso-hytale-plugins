@@ -1,7 +1,6 @@
 package com.kukso.hytale.warps.command;
 
 import com.hypixel.hytale.server.core.Message;
-//import com.kukso.hytale.lib.locale.LocaleMan;
 import com.kukso.hytale.warps.WarpManager;
 import com.hypixel.hytale.server.core.command.system.basecommands.AbstractPlayerCommand;
 import com.hypixel.hytale.server.core.command.system.CommandContext;
@@ -14,7 +13,6 @@ import com.hypixel.hytale.server.core.command.system.arguments.types.ArgTypes;
 import com.hypixel.hytale.server.core.command.system.arguments.system.RequiredArg;
 
 import javax.annotation.Nonnull;
-import java.util.Map;
 
 public class DelWarpCommand extends AbstractPlayerCommand {
     private final WarpManager warpManager;
@@ -38,13 +36,11 @@ public class DelWarpCommand extends AbstractPlayerCommand {
         String name = context.get(nameArg);
 
         if (warpManager.getWarp(name) == null) {
-            //player.sendMessage(LocaleMan.get(player, "warps.not_found", Map.of("warp", name)));
             player.sendMessage(Message.raw("Warp " + name + " not found!"));
             return;
         }
 
         warpManager.deleteWarp(name);
-        //player.sendMessage(LocaleMan.get(player, "warps.delete_success", Map.of("warp", name)));
         player.sendMessage(Message.raw("Warp " + name + " deleted!"));
     }
 }
